@@ -78,8 +78,12 @@ def get_sensor_readings_for_tree(db: Session, tree_id: int, skip: int = 0, limit
     return db.query(models.SensorReading).filter(models.SensorReading.tree_id == tree_id).order_by(models.SensorReading.timestamp.desc()).offset(skip).limit(limit).all()
 
 # --- Camera Capture Services ---
-def create_camera_capture(db: Session, capture: schemas.CameraCaptureCreate, tree_id: int) -> models.CameraCapture:
-    db_capture = models.CameraCapture(**capture.model_dump(), tree_id=tree_id)
+def create_camera_capture(db: Session, image_url: str, total_fruit_count: int, tree_id: int) -> models.CameraCapture:
+    db_capture = models.CameraCapture(
+        image_url=image_url, 
+        total_fruit_count=total_fruit_count, 
+        tree_id=tree_id
+    )
     db.add(db_capture)
     db.commit()
     db.refresh(db_capture)
@@ -106,4 +110,109 @@ def create_alert_for_tree(db: Session, alert: schemas.AlertCreate, tree_id: int)
     db.add(db_alert)
     db.commit()
     db.refresh(db_alert)
+    return db_alert
+
+# 5:49 - 10/12/2025 thêm 1 số hàm còn thiếu
+def get_iot_device_by_tree(db: Session, tree_id: int) -> Optional[models.IotDevice]:
+    return db.query(models.IotDevice).filter(models.IotDevice.tree_id == tree_id).first()
+    
+def get_iot_device(db: Session, device_id: int) -> Optional[models.IotDevice]:
+    return db.query(models.IotDevice).filter(models.IotDevice.device_id == device_id).first()
+
+def update_iot_device(db: Session, device_id: int, device_update: schemas.IotDeviceUpdate) -> Optional[models.IotDevice]:
+    db_device = get_iot_device(db, device_id)
+    if db_device:
+        update_data = device_update.model_dump(exclude_unset=True)
+        for key, value in update_data.items():
+            setattr(db_device, key, value)
+        db.commit()
+        db.refresh(db_device)
+    return db_device
+
+def delete_iot_device(db: Session, device_id: int) -> Optional[models.IotDevice]:
+    db_device = get_iot_device(db, device_id)
+    if db_device:
+        db.delete(db_device)
+        db.commit()
+    return db_device
+
+# --- Camera Capture Services ---
+# create_camera_capture đã có sẵn
+def get_camera_capture(db: Session, capture_id: int) -> Optional[models.CameraCapture]:
+    return db.query(models.CameraCapture).filter(models.CameraCapture.capture_id == capture_id).first()
+
+# get_camera_captures_for_tree đã có sẵn
+
+def update_camera_capture(db: Session, capture_id: int, capture_update: schemas.CameraCaptureBase) -> Optional[models.CameraCapture]:
+    db_capture = get_camera_capture(db, capture_id)
+    if db_capture:
+        update_data = capture_update.model_dump(exclude_unset=True)
+        for key, value in update_data.items():
+            setattr(db_capture, key, value)
+        db.commit()
+        db.refresh(db_capture)
+    return db_capture
+
+def delete_camera_capture(db: Session, capture_id: int) -> Optional[models.CameraCapture]:
+    db_capture = get_camera_capture(db, capture_id)
+    if db_capture:
+        db.delete(db_capture)
+        db.commit()
+    return db_capture
+    
+# --- Fruit Detail Services (Nested under Camera Capture) ---
+def create_fruit_detail(db: Session, detail: schemas.FruitDetailCreate, capture_id: int) -> models.FruitDetail:
+    db_detail = models.FruitDetail(**detail.model_dump(), capture_id=capture_id)
+    db.add(db_detail)
+    db.commit()
+    db.refresh(db_detail)
+    return db_detail
+
+def get_fruit_detail(db: Session, detail_id: int) -> Optional[models.FruitDetail]:
+    return db.query(models.FruitDetail).filter(models.FruitDetail.detail_id == detail_id).first()
+
+def get_fruit_details_for_capture(db: Session, capture_id: int) -> List[models.FruitDetail]:
+    return db.query(models.FruitDetail).filter(models.FruitDetail.capture_id == capture_id).all()
+    
+# Thêm update và delete cho FruitDetail nếu cần, nhưng thường chi tiết quả sẽ được tạo/xóa cùng với CameraCapture.
+# Tạm thời chỉ giữ lại create, get.
+
+# --- Control History Services ---
+def create_control_history(db: Session, history: schemas.ControlHistoryCreate, tree_id: int, user_id: int) -> models.ControlHistory:
+    db_history = models.ControlHistory(**history.model_dump(), tree_id=tree_id, user_id=user_id)
+    db.add(db_history)
+    db.commit()
+    db.refresh(db_history)
+    return db_history
+
+def get_control_history_for_tree(db: Session, tree_id: int, skip: int = 0, limit: int = 100) -> List[models.ControlHistory]:
+    return db.query(models.ControlHistory).filter(models.ControlHistory.tree_id == tree_id).order_by(models.ControlHistory.command_time.desc()).offset(skip).limit(limit).all()
+
+def get_control_history(db: Session, history_id: int) -> Optional[models.ControlHistory]:
+    return db.query(models.ControlHistory).filter(models.ControlHistory.history_id == history_id).first()
+# Lịch sử điều khiển (ControlHistory) thường không được update hay delete, chỉ tạo mới (CREATE) và đọc (READ).
+
+# --- Alert Services ---
+# create_alert_for_tree đã có sẵn
+def get_alert(db: Session, alert_id: int) -> Optional[models.Alert]:
+    return db.query(models.Alert).filter(models.Alert.alert_id == alert_id).first()
+
+def get_alerts_for_tree(db: Session, tree_id: int, skip: int = 0, limit: int = 100) -> List[models.Alert]:
+    return db.query(models.Alert).filter(models.Alert.tree_id == tree_id).order_by(models.Alert.alert_time.desc()).offset(skip).limit(limit).all()
+
+def update_alert(db: Session, alert_id: int, alert_update: schemas.AlertUpdate) -> Optional[models.Alert]:
+    db_alert = get_alert(db, alert_id)
+    if db_alert:
+        update_data = alert_update.model_dump(exclude_unset=True)
+        for key, value in update_data.items():
+            setattr(db_alert, key, value)
+        db.commit()
+        db.refresh(db_alert)
+    return db_alert
+
+def delete_alert(db: Session, alert_id: int) -> Optional[models.Alert]:
+    db_alert = get_alert(db, alert_id)
+    if db_alert:
+        db.delete(db_alert)
+        db.commit()
     return db_alert
