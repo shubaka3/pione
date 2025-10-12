@@ -2,11 +2,16 @@ from pydantic import BaseModel, EmailStr
 from typing import List, Optional, Any
 from datetime import datetime, date
 
+# --- Thêm schema mới cho việc đăng nhập ---
+class UserLogin(BaseModel):
+    username: str
+    password: str
+
 # --- Token Schemas ---
 class Token(BaseModel):
     access_token: str
     token_type: str
-
+# ... (phần còn lại của file giữ nguyên) ...
 class TokenData(BaseModel):
     username: Optional[str] = None
 
