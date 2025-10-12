@@ -12,7 +12,7 @@ Dự án này là một server backend được xây dựng trên nền tảng *
 ---
 
 2.  Cài đặt môi trường
-**Trên Windows:**
+
     Sử dụng terminal tạo máy ảo
     ```bash
     python -m venv venv
