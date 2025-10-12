@@ -10,26 +10,29 @@ Dự án này là một server backend được xây dựng trên nền tảng *
     git clone https://github.com/HNMPhuoc/task-management-app.git
     ```
 ---
-2.  Cài đặt môi trường
 
-Sử dụng terminal tạo máy ảo
+2.  Cài đặt môi trường
+    **Trên Windows:**
+    Sử dụng terminal tạo máy ảo
     ```bash
     python -m venv venv
     ```
-Kích hoạt máy ảo venv
+    Kích hoạt máy ảo venv
     ```bash
     .\venv\Scripts\activate
     ```
+
 3. Tải thư viện vào máy ảo
     ```bash
     pip install -r requirements.txt
     ```
+    
 4. Chạy server
 Sử dụng lệnh uvicorn 1:
     ```bash
     uvicorn main:app --host 0.0.0.0 --port 8000 --reload
     ```
-Hoặc dùng lệnh uvicorn 2:
+    Hoặc dùng lệnh uvicorn 2:
     ```bash
     uvicorn main:app --host 0.0.0.0 --port 8000
     ```
