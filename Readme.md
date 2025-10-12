@@ -37,7 +37,7 @@ Sử dụng lệnh uvicorn 1:
     uvicorn main:app --host 0.0.0.0 --port 8000
     ```
 5. Tạo file env
-Ví dụ:
+Example:
     ```bash
     DATABASE_URL="postgresql://postgres:user1@localhost:5432/db_pione"
     # Database URL format: postgresql://<user>:<password>@<host>:<port>/<dbname>
