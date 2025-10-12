@@ -36,3 +36,15 @@ Sử dụng lệnh uvicorn 1:
     ```bash
     uvicorn main:app --host 0.0.0.0 --port 8000
     ```
+5. Tạo file env
+    Ví dụ:
+    ```bash
+    DATABASE_URL="postgresql://postgres:user1@localhost:5432/db_pione"
+    # Database URL format: postgresql://<user>:<password>@<host>:<port>/<dbname>
+    # DATABASE_URL="postgresql://postgres:your_strong_password@localhost:5432/your_db_name"
+    
+    # JWT Settings
+    SECRET_KEY="your-secret-key"
+    ALGORITHM="HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES=60
+    ```
