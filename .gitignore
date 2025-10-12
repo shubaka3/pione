@@ -1,0 +1,107 @@
+# ============================
+# Python
+# ============================
+__pycache__/
+*.py[cod]
+*$py.class
+
+# ============================
+# Virtual Environment
+# ============================
+venv/
+env/
+ENV/
+.venv/
+
+# ============================
+# IDE / Editor
+# ============================
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ============================
+# Logs / Database
+# ============================
+*.log
+*.sqlite3
+db.sqlite3
+
+# ============================
+# Compiled files
+# ============================
+*.so
+*.dll
+*.dylib
+
+# ============================
+# Byte-compiled / optimized / DLL files
+# ============================
+__pycache__/
+*.py[cod]
+*$py.class
+
+# ============================
+# Distribution / packaging
+# ============================
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# ============================
+# PyInstaller
+# ============================
+*.manifest
+*.spec
+
+# ============================
+# Unit test / coverage reports
+# ============================
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+cover/
+
+# ============================
+# mypy
+# ============================
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# ============================
+# FastAPI / Uvicorn
+# ============================
+*.pid
+
+# ============================
+# Misc
+# ============================
+.DS_Store
+Thumbs.db
