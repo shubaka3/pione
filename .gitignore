@@ -105,3 +105,4 @@ dmypy.json
 # ============================
 .DS_Store
 Thumbs.db
+.env
