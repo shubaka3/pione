@@ -2,10 +2,12 @@ from fastapi import FastAPI, Depends, HTTPException, status
 # Loại bỏ OAuth2PasswordRequestForm vì không dùng nữa
 from sqlalchemy.orm import Session
 from datetime import timedelta
+from pathlib import Path # <--- Thêm import này
+
 
 from app import models, schemas, services, auth
 from app.database import engine, get_db
-from app.routers import users, trees
+from app.routers import users, trees, iot_devices, alerts
 
 # Tạo các bảng trong database nếu chúng chưa tồn tại
 models.Base.metadata.create_all(bind=engine)
@@ -15,6 +17,8 @@ app = FastAPI(
     description="API for monitoring and controlling smart garden systems.",
     version="1.0.0",
 )
+
+Path("uploads").mkdir(exist_ok=True)
 
 # --- Authentication Endpoint (ĐÃ SỬA ĐỔI) ---
 @app.post("/api/auth/token", response_model=schemas.Token, tags=["authentication"])
@@ -40,10 +44,14 @@ def login_for_access_token(
     )
     return {"access_token": access_token, "token_type": "bearer"}
 
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
+
 
 # --- Include Routers ---
 app.include_router(users.router)
 app.include_router(trees.router)
+app.include_router(iot_devices.router)
+app.include_router(alerts.router)
 
 
 @app.get("/api/health", tags=["health"])
