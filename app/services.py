@@ -78,8 +78,12 @@ def get_sensor_readings_for_tree(db: Session, tree_id: int, skip: int = 0, limit
     return db.query(models.SensorReading).filter(models.SensorReading.tree_id == tree_id).order_by(models.SensorReading.timestamp.desc()).offset(skip).limit(limit).all()
 
 # --- Camera Capture Services ---
-def create_camera_capture(db: Session, capture: schemas.CameraCaptureCreate, tree_id: int) -> models.CameraCapture:
-    db_capture = models.CameraCapture(**capture.model_dump(), tree_id=tree_id)
+def create_camera_capture(db: Session, image_url: str, total_fruit_count: int, tree_id: int) -> models.CameraCapture:
+    db_capture = models.CameraCapture(
+        image_url=image_url, 
+        total_fruit_count=total_fruit_count, 
+        tree_id=tree_id
+    )
     db.add(db_capture)
     db.commit()
     db.refresh(db_capture)

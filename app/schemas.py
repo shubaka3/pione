@@ -105,9 +105,9 @@ class SensorReading(SensorReadingBase):
     class Config:
         from_attributes = True
 
-# --- Camera Capture Schemas ---
 class CameraCaptureBase(BaseModel):
-    image_url: str
+    # ⭐️ Thay thế camera_info: Optional[str] = None bằng image_url
+    image_url: str # Sẽ lưu URL hoặc đường dẫn file
     total_fruit_count: Optional[int] = 0
 
 class CameraCaptureCreate(CameraCaptureBase):
@@ -117,7 +117,7 @@ class CameraCapture(CameraCaptureBase):
     capture_id: int
     tree_id: int
     capture_time: datetime
-
+    fruit_details: List["FruitDetail"] = [] 
     class Config:
         from_attributes = True
         

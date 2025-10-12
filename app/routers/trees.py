@@ -1,6 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Form
 from sqlalchemy.orm import Session
 from typing import List
+from pathlib import Path # <--- Thêm import này
+from uuid import uuid4 # <--- Thêm import này để tạo tên file duy nhất
 
 from .. import schemas, services, auth, models
 from ..database import get_db
@@ -134,16 +136,66 @@ def check_tree_access_and_get(tree_id: int, current_user: models.User, db: Sessi
         raise HTTPException(status_code=403, detail="Not authorized to access this tree's captures")
     return db_tree
 
+# --- Camera Capture Endpoints (Đã sửa lỗi lưu file) ---
 @router.post("/{tree_id}/captures/", response_model=schemas.CameraCapture, status_code=status.HTTP_201_CREATED, tags=["camera_captures"])
 def create_capture_for_tree(
     tree_id: int,
-    capture: schemas.CameraCaptureCreate,
-    current_user: models.User = Depends(auth.get_current_active_user), # Bảo vệ bằng auth
+    file: UploadFile = File(...),
+    total_fruit_count: int = Form(0),
+    current_user: models.User = Depends(auth.get_current_active_user),
     db: Session = Depends(get_db)
 ):
+    # 1. Kiểm tra quyền
     check_tree_access_and_get(tree_id, current_user, db)
-    return services.create_camera_capture(db, capture=capture, tree_id=tree_id)
+    
+    # 2. Xử lý lưu file
+    # Đường dẫn sẽ là: {thư mục gốc}/uploads/{tree_id}/{tên_file}
+    upload_dir = Path("uploads") / str(tree_id)
+    # Đảm bảo thư mục tồn tại (parents=True để tạo các thư mục cha nếu cần)
+    try:
+        upload_dir.mkdir(parents=True, exist_ok=True)
+    except Exception as e:
+        print(f"LỖI TẠO THƯ MỤC {upload_dir}: {e}")
+        raise HTTPException(status_code=500, detail="Could not create upload directory.")
+        
+    # Tạo tên file duy nhất
+    # Thêm check file.filename để tránh lỗi nếu file.filename là None (hiếm)
+    file_extension = Path(file.filename).suffix if file.filename else ".bin" 
+    unique_filename = f"{uuid4()}{file_extension}"
+    file_path = upload_dir / unique_filename
+    
+    # ⭐️ LOGIC LƯU FILE ĐƯỢC CẢI TIẾN VÀ DEBUG LỖI THỰC TẾ
+    try:
+        # Đọc toàn bộ nội dung file từ stream (File.file là SpooledTemporaryFile)
+        file_content = file.file.read()
+        
+        # Ghi nội dung vào file mới (wb: write binary)
+        with open(file_path, "wb") as f:
+            f.write(file_content)
+            
+    except Exception as e:
+        # ⭐️ IN LỖI RA CONSOLE: Lỗi thực tế (ví dụ: PermissionError) sẽ xuất hiện ở đây.
+        print(f"LỖI LƯU FILE TẠI {file_path}: {e}")
+        # Chuyển đổi lỗi thành HTTPException 500
+        raise HTTPException(status_code=500, detail="Could not save file. Check server logs for the actual error.")
+    finally:
+        # Đóng stream của file đã upload
+        file.file.close()
 
+    # 3. Tạo URL công khai và lưu vào database
+    relative_path = Path("uploads") / str(tree_id) / unique_filename
+    
+    db_capture = services.create_camera_capture(
+        db, 
+        image_url=str(relative_path.as_posix()), # Dùng .as_posix() để đảm bảo path separators là / (cho URL) ngay cả trên Windows
+        total_fruit_count=total_fruit_count, 
+        tree_id=tree_id
+    )
+    
+    return db_capture
+
+
+# Endpoint GET /captures/
 @router.get("/{tree_id}/captures/", response_model=List[schemas.CameraCapture], tags=["camera_captures"])
 def read_captures_for_tree(
     tree_id: int,
@@ -153,8 +205,20 @@ def read_captures_for_tree(
     db: Session = Depends(get_db)
 ):
     check_tree_access_and_get(tree_id, current_user, db)
-    return services.get_camera_captures_for_tree(db, tree_id=tree_id, skip=skip, limit=limit)
+    db_captures = services.get_camera_captures_for_tree(db, tree_id=tree_id, skip=skip, limit=limit)
+    
+    # ⭐️ Xử lý trả về Full URL
+    # Trong môi trường production, bạn sẽ cần Request object để lấy host.
+    # Trong môi trường dev (localhost:8000), kết quả image_url sẽ là:
+    # /uploads/{tree_id}/{file_name}
+    
+    # Vì `image_url` trong schema là string, nó sẽ trả về đường dẫn đã lưu.
+    # Nếu bạn muốn trả về Full URL, bạn cần tạo một Schema mới hoặc dùng Request
+    
+    # Cách đơn giản: Chỉ cần đảm bảo client biết rằng /uploads/ là URL gốc
+    return db_captures
 
+    
 @router.get("/captures/{capture_id}", response_model=schemas.CameraCapture, tags=["camera_captures"])
 def read_capture(
     capture_id: int,

@@ -3,6 +3,7 @@ from fastapi import FastAPI, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from datetime import timedelta
 from pathlib import Path # <--- Thêm import này
+from fastapi.staticfiles import StaticFiles
 
 
 from app import models, schemas, services, auth
