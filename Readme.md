@@ -38,7 +38,7 @@ Sử dụng lệnh uvicorn 1:
     ```
 5. Tạo file env
 Example:
-    ```bash
+   ```bash
     DATABASE_URL="postgresql://postgres:user1@localhost:5432/db_pione"
     # Database URL format: postgresql://<user>:<password>@<host>:<port>/<dbname>
     # DATABASE_URL="postgresql://postgres:your_strong_password@localhost:5432/your_db_name"
