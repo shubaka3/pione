@@ -75,23 +75,29 @@ class SensorReading(Base):
 class CameraCapture(Base):
     __tablename__ = "camera_captures"
 
-    capture_id = Column(Integer, primary_key=True, index=True) # BIGSERIAL in practice
+    # expose capture_id attribute while DB column remains 'id' to preserve existing code expectations
+    capture_id = Column('id', Integer, primary_key=True, index=True)
     tree_id = Column(Integer, ForeignKey("trees.tree_id", ondelete="CASCADE"), nullable=False)
+    camera_id = Column(Integer, ForeignKey("cameras.id", ondelete="SET NULL"), nullable=True)  # Cập nhật tham chiếu đến cameras.id
     capture_time = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
     image_url = Column(Text, nullable=False)
     total_fruit_count = Column(Integer, default=0)
 
     tree = relationship("Tree", back_populates="camera_captures")
+    camera = relationship("Camera", back_populates="captures")
     fruit_details = relationship("FruitDetail", back_populates="capture", cascade="all, delete-orphan")
 
-    __table_args__ = (Index('idx_captures_tree_time', "tree_id", "capture_time"),)
+    __table_args__ = (
+        Index('idx_captures_tree_time', "tree_id", "capture_time"),
+        Index('idx_captures_camera', "camera_id")
+    )
 
 
 class FruitDetail(Base):
     __tablename__ = "fruit_details"
-
-    detail_id = Column(Integer, primary_key=True, index=True) # BIGSERIAL in practice
-    capture_id = Column(Integer, ForeignKey("camera_captures.capture_id", ondelete="CASCADE"), nullable=False)
+    # expose detail_id attribute while DB column remains 'id'
+    detail_id = Column('id', Integer, primary_key=True, index=True) # BIGSERIAL in practice
+    capture_id = Column(Integer, ForeignKey("camera_captures.id", ondelete="CASCADE"), nullable=False)
     fruit_index = Column(Integer, nullable=False)
     size_cm = Column(Numeric(5, 2))
     color_code = Column(String(50))
@@ -115,6 +121,59 @@ class ControlHistory(Base):
     
     tree = relationship("Tree", back_populates="control_history")
     user = relationship("User", back_populates="control_history")
+
+class Camera(Base):
+    __tablename__ = "cameras"
+
+    # expose camera_id attribute while DB column remains 'id'
+    camera_id = Column('id', Integer, primary_key=True, index=True)  # Đổi tên từ camera_id thành id cho đơn giản
+    name = Column(String(100), nullable=False)
+    rtsp_url = Column(Text, nullable=False)
+    status = Column(String(50), default="inactive")
+    last_connected = Column(DateTime(timezone=True))
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    assignments = relationship("CameraAssignment", back_populates="camera", cascade="all, delete-orphan")
+    sessions = relationship("CameraSession", back_populates="camera", cascade="all, delete-orphan")
+    captures = relationship("CameraCapture", back_populates="camera", cascade="all, delete-orphan")
+
+class CameraAssignment(Base):
+    __tablename__ = "camera_assignments"
+
+    assignment_id = Column('id', Integer, primary_key=True, index=True)  # Đổi tên từ assignment_id thành id
+    camera_id = Column(Integer, ForeignKey("cameras.id", ondelete="CASCADE"), nullable=False)  # Cập nhật tham chiếu đến cameras.id
+    tree_id = Column(Integer, ForeignKey("trees.tree_id", ondelete="CASCADE"), nullable=False)
+    is_primary = Column(Boolean, default=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    camera = relationship("Camera", back_populates="assignments")
+    tree = relationship("Tree")
+
+    __table_args__ = (
+        Index('idx_camera_assignments_tree', "tree_id"),
+        Index('idx_camera_assignments_camera', "camera_id")
+    )
+
+class CameraSession(Base):
+    __tablename__ = "camera_sessions"
+
+    session_id = Column('id', Integer, primary_key=True, index=True)  # Đổi tên từ session_id thành id
+    camera_id = Column(Integer, ForeignKey("cameras.id", ondelete="CASCADE"), nullable=False)  # Cập nhật tham chiếu đến cameras.id
+    user_id = Column(Integer, ForeignKey("users.user_id", ondelete="CASCADE"), nullable=False)
+    start_time = Column(DateTime(timezone=True), server_default=func.now())
+    end_time = Column(DateTime(timezone=True))
+    session_token = Column(Text, unique=True, nullable=False)
+    status = Column(String(50), default="active")
+
+    camera = relationship("Camera", back_populates="sessions")
+    user = relationship("User")
+
+    __table_args__ = (
+        Index('idx_camera_sessions_camera', "camera_id"),
+        Index('idx_camera_sessions_token', "session_token"),
+        Index('idx_camera_sessions_status', "status")
+    )
 
 class Alert(Base):
     __tablename__ = "alerts"

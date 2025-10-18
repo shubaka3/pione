@@ -12,7 +12,7 @@ router = APIRouter(
     responses={404: {"description": "Not found"}},
 )
 
-@router.post("/", response_model=schemas.Tree, status_code=status.HTTP_201_CREATED)
+@router.post("", response_model=schemas.Tree, status_code=status.HTTP_201_CREATED)
 def create_tree_for_current_user(
     tree: schemas.TreeCreate,
     current_user: models.User = Depends(auth.get_current_active_user),
@@ -20,7 +20,7 @@ def create_tree_for_current_user(
 ):
     return services.create_user_tree(db=db, tree=tree, user_id=current_user.user_id)
 
-@router.get("/", response_model=List[schemas.Tree])
+@router.get("", response_model=List[schemas.Tree])
 def read_user_trees(
     skip: int = 0,
     limit: int = 100,

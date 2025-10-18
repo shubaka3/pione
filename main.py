@@ -1,11 +1,12 @@
 from fastapi import FastAPI, Depends, HTTPException, status
+from fastapi.middleware.cors import CORSMiddleware
 # Loại bỏ OAuth2PasswordRequestForm vì không dùng nữa
 from sqlalchemy.orm import Session
 from datetime import timedelta
 
 from app import models, schemas, services, auth
 from app.database import engine, get_db
-from app.routers import users, trees
+from app.routers import users, trees, cameras
 
 # Tạo các bảng trong database nếu chúng chưa tồn tại
 models.Base.metadata.create_all(bind=engine)
@@ -14,6 +15,15 @@ app = FastAPI(
     title="Garden IoT API",
     description="API for monitoring and controlling smart garden systems.",
     version="1.0.0",
+)
+
+# CORS Middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allows all origins
+    allow_credentials=True,
+    allow_methods=["*"],  # Allows all methods
+    allow_headers=["*"],  # Allows all headers
 )
 
 # --- Authentication Endpoint (ĐÃ SỬA ĐỔI) ---
@@ -44,6 +54,7 @@ def login_for_access_token(
 # --- Include Routers ---
 app.include_router(users.router)
 app.include_router(trees.router)
+app.include_router(cameras.router, prefix="/api/cameras", tags=["cameras"])
 
 
 @app.get("/api/health", tags=["health"])
