@@ -1,0 +1,336 @@
+:root {
+  /* Primary Colors */
+  --primary-green: #2F5E32;     /* Deep Forest Green - Màu xanh lá đậm của rừng */
+  --secondary-green: #4A7834;   /* Leaf Green - Màu lá cây */
+  --accent-green: #8BC34A;      /* Fresh Growth - Màu mầm non */
+  
+  /* Earth Tones */
+  --soil-brown: #5D4037;        /* Rich Soil - Màu đất màu mỡ */
+  --wood-brown: #795548;        /* Wood Brown - Màu gỗ */
+  --sand-beige: #D7CCC8;        /* Sandy Soil - Màu cát */
+  
+  /* Sky and Water */
+  --sky-blue: #03A9F4;          /* Sky Blue - Màu bầu trời */
+  --water-blue: #0288D1;        /* Water - Màu nước */
+  --cloud-white: #ECEFF1;       /* Cloud White - Màu mây */
+  
+  /* Status Colors */
+  --success-green: #4CAF50;     /* Growth - Màu phát triển */
+  --warning-yellow: #FFC107;    /* Harvest - Màu thu hoạch */
+  --danger-red: #F44336;        /* Alert - Màu cảnh báo */
+  
+  /* Text Colors */
+  --text-primary: #263238;      /* Dark Text - Màu chữ chính */
+  --text-secondary: #455A64;    /* Medium Text - Màu chữ phụ */
+  --text-light: #B0BEC5;       /* Light Text - Màu chữ nhạt */
+  
+  /* Background Colors */
+  --bg-primary: #F5F7F4;        /* Light Nature - Màu nền chính */
+  --bg-secondary: #E8F5E9;      /* Soft Green - Màu nền phụ */
+  --bg-dark: #1B2519;          /* Deep Forest - Màu nền tối */
+}
+
+/* Base Styles */
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: 'Source Sans Pro', sans-serif;
+}
+
+/* Card Styles */
+.card {
+  background-color: white;
+  border-radius: 12px;
+  border: 1px solid #E0E7E3;
+  box-shadow: 0 4px 6px rgba(47, 94, 50, 0.1);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(47, 94, 50, 0.15);
+}
+
+/* Button Styles */
+.btn {
+  border-radius: 8px;
+  padding: 0.625rem 1.25rem;
+  font-weight: 600;
+  transition: all 0.2s;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.btn-primary {
+  background-color: var(--primary-green);
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: var(--secondary-green);
+}
+
+.btn-secondary {
+  background-color: var(--cloud-white);
+  color: var(--primary-green);
+  border: 2px solid var(--primary-green);
+}
+
+.btn-secondary:hover {
+  background-color: var(--primary-green);
+  color: white;
+}
+
+.btn-success {
+  background-color: var(--success-green);
+  color: white;
+}
+
+.btn-success:hover {
+  filter: brightness(1.1);
+}
+
+.btn-danger {
+  background-color: var(--danger-red);
+  color: white;
+}
+
+.btn-danger:hover {
+  filter: brightness(1.1);
+}
+
+/* Input Styles */
+.form-input {
+  border: 2px solid #E0E7E3;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  transition: all 0.2s;
+  background-color: white;
+  color: var(--text-primary);
+}
+
+.form-input:focus {
+  border-color: var(--primary-green);
+  box-shadow: 0 0 0 3px rgba(47, 94, 50, 0.2);
+  outline: none;
+}
+
+/* Status Badges */
+.badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.badge-active {
+  background-color: rgba(76, 175, 80, 0.1);
+  color: var(--success-green);
+  border: 1px solid var(--success-green);
+}
+
+.badge-inactive {
+  background-color: rgba(244, 67, 54, 0.1);
+  color: var(--danger-red);
+  border: 1px solid var(--danger-red);
+}
+
+/* Navigation */
+.navbar {
+  background-color: white;
+  border-bottom: 1px solid #E0E7E3;
+  padding: 1rem;
+}
+
+.navbar-brand {
+  color: var(--primary-green);
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+/* Dashboard Grid */
+.dashboard-grid {
+  display: grid;
+  gap: 1.5rem;
+  padding: 1.5rem;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+}
+
+/* Loading Animation */
+.loader {
+  width: 48px;
+  height: 48px;
+  border: 5px solid var(--cloud-white);
+  border-bottom-color: var(--primary-green);
+  border-radius: 50%;
+  animation: rotate 1s linear infinite;
+}
+
+@keyframes rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Plant Detail Sections */
+.plant-detail {
+  background-color: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+}
+
+.plant-stats {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+.stat-card {
+  background-color: var(--bg-secondary);
+  padding: 1rem;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.stat-title {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.stat-value {
+  color: var(--text-primary);
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+/* Timeline */
+.timeline {
+  position: relative;
+  padding-left: 2rem;
+}
+
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background-color: var(--primary-green);
+}
+
+.timeline-item {
+  position: relative;
+  padding-bottom: 1.5rem;
+}
+
+.timeline-item::before {
+  content: '';
+  position: absolute;
+  left: -2rem;
+  top: 0;
+  width: 1rem;
+  height: 1rem;
+  border-radius: 50%;
+  background-color: var(--primary-green);
+  border: 3px solid white;
+}
+
+/* Charts and Graphs */
+.chart-container {
+  background-color: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 4px rgba(47, 94, 50, 0.1);
+}
+
+/* Custom Scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+  border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--primary-green);
+  border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--secondary-green);
+}
+
+/* Weather Icons */
+.weather-icon {
+  width: 48px;
+  height: 48px;
+  fill: var(--primary-green);
+}
+
+/* Growth Stage Indicators */
+.growth-stage {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  background-color: var(--bg-secondary);
+  border-radius: 8px;
+}
+
+.growth-stage-icon {
+  width: 24px;
+  height: 24px;
+  fill: var(--secondary-green);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .plant-stats {
+    grid-template-columns: 1fr;
+  }
+  
+  .btn {
+    width: 100%;
+  }
+}
+
+/* Dark Mode */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg-primary: var(--bg-dark);
+    --text-primary: var(--cloud-white);
+    --text-secondary: var(--text-light);
+  }
+
+  .card,
+  .navbar,
+  .plant-detail,
+  .chart-container {
+    background-color: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+
+  .form-input {
+    background-color: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
+  }
+
+  .stat-card {
+    background-color: rgba(255, 255, 255, 0.05);
+  }
+}
