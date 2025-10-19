@@ -61,7 +61,7 @@ CREATE TABLE sensor_readings (
 CREATE INDEX idx_readings_tree_time ON sensor_readings (tree_id, "timestamp" DESC);
 
 CREATE TABLE camera_captures (
-    id BIGSERIAL PRIMARY KEY,
+    capture_id BIGSERIAL PRIMARY KEY,
     tree_id INTEGER NOT NULL,
     capture_time TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     image_url TEXT NOT NULL,
@@ -72,14 +72,14 @@ CREATE TABLE camera_captures (
 CREATE INDEX idx_captures_tree_time ON camera_captures (tree_id, capture_time DESC);
 
 CREATE TABLE fruit_details (
-    id BIGSERIAL PRIMARY KEY,
+    detail_id BIGSERIAL PRIMARY KEY,
     capture_id BIGINT NOT NULL,
     fruit_index INTEGER NOT NULL,
     size_cm NUMERIC(5, 2),
     color_code VARCHAR(50),
     health_status VARCHAR(50),
     bounding_box_json JSONB,
-    FOREIGN KEY (capture_id) REFERENCES camera_captures (id) ON DELETE CASCADE
+    FOREIGN KEY (capture_id) REFERENCES camera_captures (capture_id) ON DELETE CASCADE
 );
 
 CREATE INDEX idx_details_capture_id ON fruit_details (capture_id);
@@ -111,7 +111,7 @@ CREATE INDEX idx_alerts_time ON alerts (alert_time DESC);
 
 -- Camera related tables
 CREATE TABLE cameras (
-    id SERIAL PRIMARY KEY,
+    camera_id SERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     rtsp_url TEXT NOT NULL,
     status VARCHAR(50) DEFAULT 'inactive',
@@ -121,31 +121,31 @@ CREATE TABLE cameras (
 );
 
 CREATE TABLE camera_assignments (
-    id SERIAL PRIMARY KEY,
+    assignment_id SERIAL PRIMARY KEY,
     camera_id INTEGER NOT NULL,
     tree_id INTEGER NOT NULL,
     is_primary BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (camera_id) REFERENCES cameras (id) ON DELETE CASCADE,
+    FOREIGN KEY (camera_id) REFERENCES cameras (camera_id) ON DELETE CASCADE,
     FOREIGN KEY (tree_id) REFERENCES trees (tree_id) ON DELETE CASCADE,
     UNIQUE (camera_id, tree_id)
 );
 
 CREATE TABLE camera_sessions (
-    id SERIAL PRIMARY KEY,
+    session_id SERIAL PRIMARY KEY,
     camera_id INTEGER NOT NULL,
     user_id INTEGER NOT NULL,
     start_time TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     end_time TIMESTAMP WITH TIME ZONE,
     session_token TEXT UNIQUE NOT NULL,
     status VARCHAR(50) DEFAULT 'active',
-    FOREIGN KEY (camera_id) REFERENCES cameras (id) ON DELETE CASCADE,
+    FOREIGN KEY (camera_id) REFERENCES cameras (camera_id) ON DELETE CASCADE,
     FOREIGN KEY (user_id) REFERENCES users (user_id) ON DELETE CASCADE
 );
 
 -- Add camera relation to camera_captures
 ALTER TABLE camera_captures
-ADD COLUMN camera_id INTEGER REFERENCES cameras(id);
+ADD COLUMN camera_id INTEGER REFERENCES cameras(camera_id);
 
 -- Create indexes for better query performance
 CREATE INDEX idx_camera_assignments_tree ON camera_assignments (tree_id);

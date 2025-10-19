@@ -1,8 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from typing import List
+from typing import List, Optional
 
 from .. import schemas, services, auth, models
+from ..schemas.camera import CameraStreamResponse
 from ..database import get_db
 
 router = APIRouter(
@@ -87,3 +88,51 @@ def read_readings_for_tree(tree_id: int, skip: int = 0, limit: int = 100, db: Se
     if not db_tree:
         raise HTTPException(status_code=404, detail="Tree not found")
     return services.get_sensor_readings_for_tree(db, tree_id=tree_id, skip=skip, limit=limit)
+
+@router.get("/{tree_id}/stream", response_model=CameraStreamResponse)
+def get_tree_camera_stream(
+    tree_id: int,
+    current_user: models.User = Depends(auth.get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Lấy thông tin stream từ camera được gán cho cây.
+    """
+    # Kiểm tra cây có tồn tại và thuộc về người dùng hiện tại không
+    db_tree = services.get_tree(db, tree_id=tree_id)
+    if db_tree is None:
+        raise HTTPException(status_code=404, detail="Cây không tồn tại")
+    if db_tree.user_id != current_user.user_id:
+        raise HTTPException(status_code=403, detail="Không có quyền truy cập camera của cây này")
+    
+    # Lấy thông tin gán camera chính (primary) cho cây
+    assignment = db.query(models.CameraAssignment).filter(
+        models.CameraAssignment.tree_id == tree_id,
+        models.CameraAssignment.is_primary == True
+    ).first()
+    
+    if not assignment:
+        raise HTTPException(
+            status_code=404,
+            detail="Chưa có camera nào được gán cho cây này"
+        )
+    
+    # Lấy thông tin camera
+    camera = db.query(models.Camera).filter(
+        models.Camera.camera_id == assignment.camera_id
+    ).first()
+    
+    if not camera:
+        raise HTTPException(
+            status_code=404,
+            detail="Không tìm thấy thông tin camera"
+        )
+    
+    # Trả về thông tin stream
+    return {
+        "camera_id": camera.camera_id,
+        "camera_name": camera.name,
+        "stream_url": f"/api/stream/{camera.camera_id}",
+        "status": camera.status,
+        "is_primary": assignment.is_primary
+    }

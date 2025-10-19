@@ -1,6 +1,10 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Optional, Any
 from datetime import datetime, date
+
+class CameraAssignmentBase(BaseModel):
+    camera_id: int
+    is_primary: bool = True
 
 class TreeBase(BaseModel):
     name: str
@@ -9,7 +13,10 @@ class TreeBase(BaseModel):
     planting_date: Optional[date] = None
 
 class TreeCreate(TreeBase):
-    pass
+    camera_id: Optional[int] = Field(
+        None, 
+        description="ID của camera được gán cho cây (tùy chọn)"
+    )
 
 class TreeUpdate(BaseModel):
     name: Optional[str] = None

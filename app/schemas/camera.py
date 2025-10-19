@@ -1,6 +1,6 @@
-from pydantic import BaseModel, HttpUrl
+from pydantic import BaseModel, HttpUrl, Field
 from datetime import datetime
-from typing import Optional
+from typing import Optional, Dict, Any
 
 class CameraBase(BaseModel):
     name: str
@@ -22,4 +22,15 @@ class Camera(CameraBase):
     updated_at: datetime
 
     class Config:
-        orm_mode = True
+        from_attributes = True
+
+class CameraStreamResponse(BaseModel):
+    """Model cho phản hồi thông tin stream camera"""
+    camera_id: int
+    camera_name: str
+    stream_url: str
+    status: str
+    is_primary: bool
+    
+    class Config:
+        from_attributes = True

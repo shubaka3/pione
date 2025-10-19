@@ -32,7 +32,8 @@ export const DashboardPage: React.FC = () => {
 
   const [cameraFormData, setCameraFormData] = useState<CreateCameraRequest>({
     name: '',
-    url: '',
+    rtsp_url: '',
+    fps: 30,
   });
 
   const handleCreateTree = async (e: React.FormEvent) => {
@@ -51,7 +52,7 @@ export const DashboardPage: React.FC = () => {
     try {
       await createCamera(cameraFormData).unwrap();
       setIsCameraModalOpen(false);
-      setCameraFormData({ name: '', url: '' });
+      setCameraFormData({ name: '', rtsp_url: '', fps: 30 });
     } catch (err) {
       console.error('Failed to create camera:', err);
     }
@@ -218,14 +219,14 @@ export const DashboardPage: React.FC = () => {
           <Input
             type="text"
             placeholder="RTSP URL"
-            value={cameraFormData.url}
-            onChange={(e) => setCameraFormData({ ...cameraFormData, url: e.target.value })}
+            value={cameraFormData.rtsp_url}
+            onChange={(e) => setCameraFormData({ ...cameraFormData, rtsp_url: e.target.value })}
             required
           />
           <Input
             type="number"
             placeholder="FPS (mặc định: 30)"
-            value={cameraFormData.fps || ''}
+            value={cameraFormData.fps || 30}
             onChange={(e) => setCameraFormData({ ...cameraFormData, fps: parseInt(e.target.value) || 30 })}
           />
           <div className="flex justify-end gap-4 pt-4">

@@ -84,7 +84,7 @@ export interface Camera {
 
 export interface CreateCameraRequest {
   name: string;
-  url: string;
+  rtsp_url: string;
   status?: boolean;
   fps?: number;
 }
