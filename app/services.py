@@ -43,41 +43,10 @@ def get_trees_by_user(db: Session, user_id: int, skip: int = 0, limit: int = 100
     return db.query(models.Tree).filter(models.Tree.user_id == user_id).offset(skip).limit(limit).all()
 
 def create_user_tree(db: Session, tree: schemas.TreeCreate, user_id: int) -> models.Tree:
-    # Tạo cây mới
-    db_tree = models.Tree(
-        user_id=user_id,
-        name=tree.name,
-        species=tree.species,
-        location=tree.location,
-        planting_date=tree.planting_date,
-        is_active=True
-    )
+    db_tree = models.Tree(**tree.model_dump(), user_id=user_id)
     db.add(db_tree)
     db.commit()
     db.refresh(db_tree)
-
-    # Nếu có chọn camera, tạo bản ghi trong camera_assignments
-    if tree.camera_id is not None:
-        # Kiểm tra camera có tồn tại không
-        camera = db.query(models.Camera).filter(
-            models.Camera.camera_id == tree.camera_id
-        ).first()
-        
-        if not camera:
-            # Nếu camera không tồn tại, rollback và báo lỗi
-            db.rollback()
-            raise ValueError(f"Camera with ID {tree.camera_id} not found")
-        
-        # Tạo bản ghi gán camera
-        assignment = models.CameraAssignment(
-            camera_id=tree.camera_id,
-            tree_id=db_tree.tree_id,
-            is_primary=True
-        )
-        db.add(assignment)
-        db.commit()
-        db.refresh(db_tree)
-
     return db_tree
     
 def update_tree(db: Session, tree_id: int, tree_update: schemas.TreeUpdate) -> Optional[models.Tree]:

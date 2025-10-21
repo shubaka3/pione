@@ -1,8 +1,5 @@
 DROP TABLE IF EXISTS fruit_details CASCADE;
 DROP TABLE IF EXISTS camera_captures CASCADE;
-DROP TABLE IF EXISTS camera_sessions CASCADE;
-DROP TABLE IF EXISTS camera_assignments CASCADE;
-DROP TABLE IF EXISTS cameras CASCADE;
 DROP TABLE IF EXISTS sensor_readings CASCADE;
 DROP TABLE IF EXISTS control_history CASCADE;
 DROP TABLE IF EXISTS alerts CASCADE;
@@ -108,64 +105,3 @@ CREATE TABLE alerts (
 );
 
 CREATE INDEX idx_alerts_time ON alerts (alert_time DESC);
-
--- Camera related tables
-CREATE TABLE cameras (
-    camera_id SERIAL PRIMARY KEY,
-    name VARCHAR(100) NOT NULL,
-    rtsp_url TEXT NOT NULL,
-    status VARCHAR(50) DEFAULT 'inactive',
-    last_connected TIMESTAMP WITH TIME ZONE,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE TABLE camera_assignments (
-    assignment_id SERIAL PRIMARY KEY,
-    camera_id INTEGER NOT NULL,
-    tree_id INTEGER NOT NULL,
-    is_primary BOOLEAN DEFAULT FALSE,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (camera_id) REFERENCES cameras (camera_id) ON DELETE CASCADE,
-    FOREIGN KEY (tree_id) REFERENCES trees (tree_id) ON DELETE CASCADE,
-    UNIQUE (camera_id, tree_id)
-);
-
-CREATE TABLE camera_sessions (
-    session_id SERIAL PRIMARY KEY,
-    camera_id INTEGER NOT NULL,
-    user_id INTEGER NOT NULL,
-    start_time TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    end_time TIMESTAMP WITH TIME ZONE,
-    session_token TEXT UNIQUE NOT NULL,
-    status VARCHAR(50) DEFAULT 'active',
-    FOREIGN KEY (camera_id) REFERENCES cameras (camera_id) ON DELETE CASCADE,
-    FOREIGN KEY (user_id) REFERENCES users (user_id) ON DELETE CASCADE
-);
-
--- Add camera relation to camera_captures
-ALTER TABLE camera_captures
-ADD COLUMN camera_id INTEGER REFERENCES cameras(camera_id);
-
--- Create indexes for better query performance
-CREATE INDEX idx_camera_assignments_tree ON camera_assignments (tree_id);
-CREATE INDEX idx_camera_assignments_camera ON camera_assignments (camera_id);
-CREATE INDEX idx_camera_sessions_camera ON camera_sessions (camera_id);
-CREATE INDEX idx_camera_sessions_token ON camera_sessions (session_token);
-CREATE INDEX idx_camera_sessions_status ON camera_sessions (status);
-CREATE INDEX idx_captures_camera_time ON camera_captures (camera_id, capture_time DESC);
-
--- Create trigger function to update updated_at column
-CREATE OR REPLACE FUNCTION update_updated_at_column()
-RETURNS TRIGGER AS $$
-BEGIN
-    NEW.updated_at = CURRENT_TIMESTAMP;
-    RETURN NEW;
-END;
-$$ language 'plpgsql';
-
--- Create trigger for cameras table
-CREATE TRIGGER update_cameras_updated_at
-    BEFORE UPDATE ON cameras
-    FOR EACH ROW
-    EXECUTE FUNCTION update_updated_at_column();

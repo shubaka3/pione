@@ -1,5 +1,4 @@
 from fastapi import FastAPI, Depends, HTTPException, status
-from fastapi.middleware.cors import CORSMiddleware
 # Loại bỏ OAuth2PasswordRequestForm vì không dùng nữa
 from sqlalchemy.orm import Session
 from datetime import timedelta
