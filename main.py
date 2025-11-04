@@ -1,5 +1,7 @@
 from fastapi import FastAPI, Depends, HTTPException, status
 # Loại bỏ OAuth2PasswordRequestForm vì không dùng nữa
+from fastapi.middleware.cors import CORSMiddleware # <--- THÊM CORSMiddleware
+
 from sqlalchemy.orm import Session
 from datetime import timedelta
 from pathlib import Path # <--- Thêm import này
@@ -17,6 +19,20 @@ app = FastAPI(
     title="Garden IoT API",
     description="API for monitoring and controlling smart garden systems.",
     version="1.0.0",
+)
+# --- CẤU HÌNH CORS (Cross-Origin Resource Sharing) ---
+origins = [
+    "*",  # Cho phép tất cả các domain. 
+          # TRONG PRODUCTION: Bạn NÊN thay thế "*" bằng danh sách các domain frontend cụ thể.
+    # Ví dụ: "http://localhost:3000", "https://app.yourdomain.com"
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,  # Cho phép gửi cookie/header Authorization
+    allow_methods=["*"],     # Cho phép tất cả các phương thức HTTP (GET, POST, PUT, DELETE,...)
+    allow_headers=["*"],     # Cho phép tất cả các headers
 )
 
 Path("uploads").mkdir(exist_ok=True)

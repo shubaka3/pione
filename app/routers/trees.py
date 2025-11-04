@@ -8,7 +8,14 @@ from .. import schemas, services, auth, models
 from ..database import get_db
 from ..routers import iot_devices # Thêm import
 from ..routers import alerts # Thêm import
+import requests
+import logging
+from datetime import datetime
 
+from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.orm import Session
+
+BLOCKCHAIN_API_URL = "http://localhost:3000/api/product"
 router = APIRouter(
     prefix="/api/trees",
     tags=["trees"],
@@ -16,13 +23,47 @@ router = APIRouter(
     responses={404: {"description": "Not found"}},
 )
 
+# @router.post("/", response_model=schemas.Tree, status_code=status.HTTP_201_CREATED)
+# def create_tree_for_current_user(
+#     tree: schemas.TreeCreate,
+#     current_user: models.User = Depends(auth.get_current_active_user),
+#     db: Session = Depends(get_db)
+# ):
+#     return services.create_user_tree(db=db, tree=tree, user_id=current_user.user_id)
+
 @router.post("/", response_model=schemas.Tree, status_code=status.HTTP_201_CREATED)
 def create_tree_for_current_user(
     tree: schemas.TreeCreate,
     current_user: models.User = Depends(auth.get_current_active_user),
     db: Session = Depends(get_db)
 ):
-    return services.create_user_tree(db=db, tree=tree, user_id=current_user.user_id)
+    # 1. Tạo cây trong CSDL của bạn
+    new_tree = services.create_user_tree(db=db, tree=tree, user_id=current_user.user_id)
+
+    # 2. Chuẩn bị dữ liệu và gọi API Blockchain
+    # [PHẦN MỚI THÊM]
+    try:
+        # Lấy dữ liệu từ 'new_tree' vừa được tạo
+        payload = {
+            "productID": str(new_tree.tree_id), # Đảm bảo là string nếu API kia yêu cầu
+            "name": new_tree.name,
+            "description": new_tree.species
+        }
+        
+        # Gửi request POST đến API blockchain
+        response = requests.post(f"{BLOCKCHAIN_API_URL}/add", json=payload, timeout=5)
+        response.raise_for_status() # Báo lỗi nếu status code là 4xx hoặc 5xx
+        
+        logging.info(f"Successfully added tree {new_tree.tree_id} to blockchain.")
+
+    except requests.exceptions.RequestException as e:
+        # Ghi lại lỗi nếu không gọi được API blockchain
+        # Request chính vẫn thành công vì đã lưu vào CSDL
+        logging.error(f"Failed to add tree {new_tree.tree_id} to blockchain: {e}")
+    
+    # 3. Trả về kết quả cho người dùng
+    return new_tree
+
 
 @router.get("/", response_model=List[schemas.Tree])
 def read_user_trees(
@@ -47,6 +88,20 @@ def read_tree(
         raise HTTPException(status_code=403, detail="Not authorized to access this tree")
     return db_tree
 
+# @router.put("/{tree_id}", response_model=schemas.Tree)
+# def update_tree(
+#     tree_id: int,
+#     tree_update: schemas.TreeUpdate,
+#     current_user: models.User = Depends(auth.get_current_active_user),
+#     db: Session = Depends(get_db)
+# ):
+#     db_tree = services.get_tree(db, tree_id=tree_id)
+#     if db_tree is None:
+#         raise HTTPException(status_code=404, detail="Tree not found")
+#     if db_tree.user_id != current_user.user_id:
+#         raise HTTPException(status_code=403, detail="Not authorized to update this tree")
+#     return services.update_tree(db, tree_id, tree_update)
+
 @router.put("/{tree_id}", response_model=schemas.Tree)
 def update_tree(
     tree_id: int,
@@ -54,12 +109,47 @@ def update_tree(
     current_user: models.User = Depends(auth.get_current_active_user),
     db: Session = Depends(get_db)
 ):
+    # 1. Kiểm tra quyền sở hữu (như cũ)
     db_tree = services.get_tree(db, tree_id=tree_id)
     if db_tree is None:
         raise HTTPException(status_code=404, detail="Tree not found")
     if db_tree.user_id != current_user.user_id:
         raise HTTPException(status_code=403, detail="Not authorized to update this tree")
-    return services.update_tree(db, tree_id, tree_update)
+
+    # 2. Cập nhật cây trong CSDL
+    updated_tree = services.update_tree(db, tree_id, tree_update)
+
+    # 3. Gọi API Blockchain nếu trạng thái active thay đổi
+    # [PHẦN MỚI THÊM]
+    
+    # Lấy các trường đã được gửi lên trong body của request PUT
+    update_data = tree_update.model_dump(exclude_unset=True) 
+    
+    blockchain_url_to_call = None
+    
+    # Giả sử bạn dùng trường 'is_active' để bật/tắt
+    if "is_active" in update_data:
+        if update_data["is_active"] is False:
+            # Nếu người dùng gửi "is_active": false
+            blockchain_url_to_call = f"{BLOCKCHAIN_API_URL}/deactivate"
+        elif update_data["is_active"] is True:
+            # Nếu người dùng gửi "is_active": true
+            blockchain_url_to_call = f"{BLOCKCHAIN_API_URL}/reactivate"
+
+    if blockchain_url_to_call:
+        try:
+            payload = {"productID": str(tree_id)}
+            # Dùng POST như bạn mô tả
+            response = requests.post(blockchain_url_to_call, json=payload, timeout=5)
+            response.raise_for_status()
+            
+            logging.info(f"Successfully updated tree {tree_id} status on blockchain.")
+
+        except requests.exceptions.RequestException as e:
+            logging.error(f"Failed to update tree {tree_id} status on blockchain: {e}")
+
+    # 4. Trả về kết quả
+    return updated_tree
 
 @router.delete("/{tree_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_tree(
@@ -234,6 +324,16 @@ def read_capture(
 
 # --- Control History Endpoints (MỚI) ---
 
+# @router.post("/{tree_id}/control_history/", response_model=schemas.ControlHistory, status_code=status.HTTP_201_CREATED, tags=["control_history"])
+# def create_control_history_for_tree(
+#     tree_id: int,
+#     history: schemas.ControlHistoryCreate,
+#     current_user: models.User = Depends(auth.get_current_active_user),
+#     db: Session = Depends(get_db)
+# ):
+#     check_tree_access_and_get(tree_id, current_user, db)
+#     return services.create_control_history(db, history=history, tree_id=tree_id, user_id=current_user.user_id)
+
 @router.post("/{tree_id}/control_history/", response_model=schemas.ControlHistory, status_code=status.HTTP_201_CREATED, tags=["control_history"])
 def create_control_history_for_tree(
     tree_id: int,
@@ -241,8 +341,41 @@ def create_control_history_for_tree(
     current_user: models.User = Depends(auth.get_current_active_user),
     db: Session = Depends(get_db)
 ):
+    # 1. Kiểm tra (như cũ)
     check_tree_access_and_get(tree_id, current_user, db)
-    return services.create_control_history(db, history=history, tree_id=tree_id, user_id=current_user.user_id)
+    
+    # 2. Tạo lịch sử trong CSDL
+    # Giả định: service của bạn trả về đối tượng lịch sử vừa tạo
+    new_history_log = services.create_control_history(db, history=history, tree_id=tree_id, user_id=current_user.user_id)
+
+    # 3. Chuẩn bị và gọi API Blockchain
+    # [PHẦN MỚI THÊM]
+    try:
+        # Định dạng chuỗi 'newProcesses' như bạn yêu cầu
+        # Lấy thời gian từ đối tượng vừa tạo (hoặc dùng datetime.now())
+        timestamp = new_history_log.created_at.isoformat() if hasattr(new_history_log, 'created_at') else datetime.now().isoformat()
+        
+        # Giả định 'history' (input) có các trường 'action' và 'details'
+        # Bạn hãy thay 'history.action' và 'history.details' bằng các trường đúng
+        process_string = f"[{timestamp}] {history.command_type}: {history.command_value}: {history.status}"
+
+        payload = {
+            "productID": str(tree_id),
+            "batch": "S_01", # Mặc định như bạn yêu cầu
+            "newProcesses": process_string
+        }
+        
+        response = requests.post(f"{BLOCKCHAIN_API_URL}/update/processes", json=payload, timeout=5)
+        response.raise_for_status()
+        
+        logging.info(f"Successfully added history for tree {tree_id} to blockchain.")
+
+    except requests.exceptions.RequestException as e:
+        logging.error(f"Failed to add history for tree {tree_id} to blockchain: {e}")
+        
+    # 4. Trả về kết quả
+    return new_history_log
+
 
 @router.get("/{tree_id}/control_history/", response_model=List[schemas.ControlHistory], tags=["control_history"])
 def read_control_history_for_tree(
