@@ -72,15 +72,14 @@ const aiResultsContentReal = document.getElementById('ai-results-content-real');
 
 // --- API Configuration ---
 const API_BASE_URL = "http://localhost:8002"; 
-const API_AI = " https://d4be9e62d6b0.ngrok-free.app"; 
-const WEBRTC_URL_BASE_WS = `ws://d4be9e62d6b0.ngrok-free.app/stream/ws`; 
+const WEBRTC_URL_BASE_WS = `wss://aaaf09b39b57.ngrok-free.app/stream/ws`; 
 const WORKFLOW_WATERING_URL = "https://workflow.emg.edu.vn:5678/webhook/watering-plants";
 const WORKFLOW_FILL_WATER_URL = "https://workflow.emg.edu.vn:5678/webhook/fillwater"; 
 
 // --- State Management ---
 let state = {
     isLoggedIn: false,
-    currentUser: null,  
+    currentUser: null,
     token: null,
     products: [],
     selectedProductId: null,
@@ -93,6 +92,14 @@ let state = {
     speechRecognition: null,
     visualizationFrameId: null, // Để dừng/bắt đầu vẽ
     currentSoundLabel: "...", // Label hiện tại của âm thanh
+    
+    // --- THÊM MỚI: State cho Thống Kê ---
+
+    charts: {
+        disease: null,
+        pest: null
+    },
+    waterCountdownInterval: null,
 };
 
 let clockInterval = null; 
@@ -240,12 +247,19 @@ const handleNavigation = (viewId) => {
         state.visualizationFrameId = null;
     }
 
+
+    if (viewId !== 'statistics') {
+        stopStatisticsPage();
+    }
+
     const activeView = document.getElementById(`${viewId}-view`);
     if (activeView) {
         activeView.classList.remove('view-hidden');
         // Nếu là sound-view, bắt đầu vẽ
         if (viewId === 'sound') {
             startSoundVisualization();
+        } else if (viewId === 'statistics') {
+            initStatisticsPage(); // THÊM MỚI
         }
     } else if (viewId === 'login') {
         loginView.classList.remove('view-hidden');
@@ -912,6 +926,188 @@ const startSoundVisualization = () => {
     draw();
 };
 
+
+
+    // --- THÊM MỚI: CÁC HÀM CHO TRANG THỐNG KÊ ---
+
+    /**
+     * Khởi tạo dữ liệu, biểu đồ, và countdown cho trang Thống Kê
+     */
+    function initStatisticsPage() {
+        // 1. Cập nhật dữ liệu (hiện tại đang hardcode theo yêu cầu)
+        // (Bạn có thể thay thế bằng logic fetch API nếu cần)
+        document.getElementById('stats-yield-total').textContent = '100 kg';
+        document.getElementById('stats-yield-ai').textContent = '40 kg';
+        document.getElementById('stats-yield-human').textContent = '60 kg';
+        document.getElementById('stats-yield-ready').textContent = '22 kg';
+        document.getElementById('stats-yield-dev').textContent = '140 kg';
+        document.getElementById('stats-quality-rate').textContent = '92%';
+        document.getElementById('stats-quality-disease').textContent = '4 lần';
+        document.getElementById('stats-quality-spoil').textContent = '2%';
+        document.getElementById('stats-forecast-1d').textContent = '~50 kg';
+        document.getElementById('stats-forecast-3d').textContent = '~112 kg';
+        document.getElementById('stats-forecast-quality').textContent = '94% Loại A';
+        document.getElementById('stats-market-price').textContent = '70.000đ/kg';
+        document.getElementById('stats-finance-revenue').textContent = '7.000.000 đ';
+        document.getElementById('stats-finance-profit').textContent = '700.000 đ';
+        document.getElementById('stats-iot-robot').textContent = '40%';
+        document.getElementById('stats-iot-water').textContent = '200 ml (So với TB)';
+        document.getElementById('stats-iot-pest-detect').textContent = '8 lần';
+        document.getElementById('stats-iot-pest-success').textContent = '100% (8/8)';
+        document.getElementById('stats-iot-pest-return').textContent = '40%';
+
+
+        // 2. Vẽ biểu đồ
+        renderDiseaseChart();
+        renderPestChart();
+
+        // 3. Bắt đầu countdown
+        startWaterCountdown();
+    }
+
+    /**
+     * Dọn dẹp tài nguyên (biểu đồ, interval) khi rời trang Thống Kê
+     */
+    function stopStatisticsPage() {
+        if (state.charts.disease) {
+            state.charts.disease.destroy();
+            state.charts.disease = null;
+        }
+        if (state.charts.pest) {
+            state.charts.pest.destroy();
+            state.charts.pest = null;
+        }
+        if (state.waterCountdownInterval) {
+            clearInterval(state.waterCountdownInterval);
+            state.waterCountdownInterval = null;
+        }
+    }
+
+    /**
+     * Vẽ biểu đồ đường (Line Chart) cho Rủi ro Bệnh
+     */
+    function renderDiseaseChart() {
+        if (state.charts.disease) {
+            state.charts.disease.destroy();
+        }
+        const ctx = diseaseRiskChartEl.getContext('2d');
+        state.charts.disease = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'],
+                datasets: [{
+                    label: 'Nguy cơ bệnh (%)',
+                    data: [5, 8, 10, 12, 15, 12, 10], // Dữ liệu 7 ngày, ngày cuối 10%
+                    borderColor: '#f97316', // text-warning
+                    backgroundColor: 'rgba(249, 115, 22, 0.1)',
+                    fill: true,
+                    tension: 0.3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 30, // Max 30%
+                        ticks: { color: '#9ca3af' }, // text-gray-400
+                        grid: { color: '#4b5563' } // border-gray-600
+                    },
+                    x: {
+                        ticks: { color: '#9ca3af' },
+                        grid: { display: false }
+                    }
+                },
+                plugins: {
+                    legend: { labels: { color: '#e5e7eb' } } // text-gray-200
+                }
+            }
+        });
+    }
+
+    /**
+     * Vẽ biểu đồ cột (Bar Chart) cho Rủi ro Thú hại
+     */
+    function renderPestChart() {
+        if (state.charts.pest) {
+            state.charts.pest.destroy();
+        }
+        const ctx = pestRiskChartEl.getContext('2d');
+        state.charts.pest = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Chuột', 'Chim'],
+                datasets: [{
+                    label: 'Số lần phát hiện (7 ngày qua)',
+                    data: [5, 3], // Tổng 8, khớp với IoT
+                    backgroundColor: [
+                        'rgba(239, 68, 68, 0.6)', // text-red-500
+                        'rgba(59, 130, 246, 0.6)' // text-blue-500
+                    ],
+                    borderColor: [
+                        '#ef4444',
+                        '#3b82f6'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                indexAxis: 'y', // Làm biểu đồ ngang cho dễ nhìn
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        ticks: { color: '#9ca3af', stepSize: 1 },
+                        grid: { color: '#4b5563' }
+                    },
+                    y: {
+                        ticks: { color: '#e5e7eb' },
+                        grid: { display: false }
+                    }
+                },
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+    }
+
+    /**
+     * Bắt đầu đồng hồ đếm ngược 5 tiếng cho bồn nước
+     */
+    function startWaterCountdown() {
+        if (state.waterCountdownInterval) {
+            clearInterval(state.waterCountdownInterval);
+        }
+        
+        // Đặt thời gian kết thúc là 5 giờ kể từ bây giờ
+        const endTime = Date.now() + 5 * 60 * 60 * 1000;
+
+        const updateCountdown = () => {
+            const remaining = endTime - Date.now();
+            
+            if (remaining <= 0) {
+                waterCountdownEl.textContent = "00:00:00";
+                waterCountdownEl.classList.remove('text-warning');
+                waterCountdownEl.classList.add('text-red-500'); // Chuyển sang màu đỏ khi hết giờ
+                clearInterval(state.waterCountdownInterval);
+                return;
+            }
+
+            const hours = Math.floor((remaining / (1000 * 60 * 60)) % 24).toString().padStart(2, '0');
+            const minutes = Math.floor((remaining / (1000 * 60)) % 60).toString().padStart(2, '0');
+            const seconds = Math.floor((remaining / 1000) % 60).toString().padStart(2, '0');
+            
+            waterCountdownEl.textContent = `${hours}:${minutes}:${seconds}`;
+        };
+
+        updateCountdown(); // Chạy ngay lần đầu
+        state.waterCountdownInterval = setInterval(updateCountdown, 1000);
+    }
+
+
 // --- Event Listeners (Đã cập nhật) ---
 document.addEventListener('DOMContentLoaded', () => {
     // Listeners (Không đổi)
@@ -999,142 +1195,14 @@ document.addEventListener('DOMContentLoaded', () => {
     
     detectionContainer.addEventListener('click', hideFruitDetails);
 
-    const callFruitDetailAPI = async (det, base64Image) => {
-        // Cấu trúc dữ liệu mặc định nếu API lỗi hoặc chưa có backend
-        const defaultData = {
-            type: det.label || 'Unknown',
-            quality: 'Analyzing...', // Hoặc 'Unknown'
-            harvest_days: 0,
-            sunlight: 0,
-            confidence: 0
-        };
-
-        try {
-            // Payload gửi đi: Ảnh Base64 + Tọa độ Box
-            const payload = {
-                image: base64Image, // Chuỗi base64 dài
-                box: det.box,       // [x1, y1, x2, y2]
-                label: det.label,
-                confidence: det.confidence
-            };
-
-            // !! QUAN TRỌNG: Thay URL này bằng API Backend thực tế của bạn
-            // Ví dụ: http://localhost:8000/api/analyze-fruit
-            const API_URL = `https://workflow.emg.edu.vn:5678/webhook/api/analyze_detail_fruit`; 
-
-            const response = await fetch(API_URL, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    // Thêm Authorization nếu backend yêu cầu
-                    // 'Authorization': `Bearer ${state.token}` 
-                },
-                body: JSON.stringify(payload)
-            });
-
-            if (!response.ok) throw new Error('API request failed');
-
-            const result = await response.json();
-            
-            // Giả sử Backend trả về format: { data: { type: "...", quality: "..." } }
-            // Merge với default để đảm bảo không thiếu trường
-            return { ...defaultData, ...result.data };
-
-        } catch (error) {
-            console.error("Lỗi gọi API chi tiết:", error);
-            // Trả về data mặc định để UI vẫn hiện (dù là số 0)
-            return defaultData; 
-        }
-    };
-
-
-    // const renderDetections = (detections) => {
-    //     detectionContainer.innerHTML = '';
-    //     const staticImage = overlayCanvas; 
-    //     const { clientWidth, clientHeight } = videoContainer;
-    //     const naturalWidth = realtimeVideo.videoWidth;
-    //     const naturalHeight = realtimeVideo.videoHeight;
-    //     if (!naturalWidth || !naturalHeight) return;
-
-    //     const imageAspect = naturalWidth / naturalHeight;
-    //     const containerAspect = clientWidth / clientHeight;
-    //     let scale, offsetX = 0, offsetY = 0;
-
-    //     if (imageAspect > containerAspect) {
-    //         scale = clientWidth / naturalWidth;
-    //         offsetY = (clientHeight - naturalHeight * scale) / 2;
-    //     } else {
-    //         scale = clientHeight / naturalHeight;
-    //         offsetX = (clientWidth - naturalWidth * scale) / 2;
-    //     }
-
-    //     const allowedFruits = ['apple', 'orange', 'fruit', 'tomato', 'grape']; 
-    //     const fruitDetections = detections.filter(d => allowedFruits.includes(d.label));
-
-    //     fruitDetections.forEach((det) => {
-    //         const [x1, y1, x2, y2] = det.box;
-    //         const centerX = ((x1 + x2) / 2) * scale + offsetX;
-    //         const centerY = ((y1 + y2) / 2) * scale + offsetY;
-
-    //         const marker = document.createElement('div');
-    //         marker.className = 'detection-marker';
-    //         marker.style.left = `${centerX}px`;
-    //         marker.style.top = `${centerY}px`;
-
-    //         marker.addEventListener('click', (e) => {
-    //             e.stopPropagation();
-    //             hideFruitDetails();
-
-    //             const sunExposure = Math.round(85 - (centerY / clientHeight) * 20);
-    //             const qualityValue = (det.box[0] + det.box[1]) % 2 === 0 ? 'Good' : 'Avg';
-    //             const harvestValue = `${Math.round((det.box[2] % 10) + 5)} days`;
-    //             const details = [
-    //                 { label: 'Type', value: det.label.charAt(0).toUpperCase() + det.label.slice(1) },
-    //                 { label: 'Quality', value: qualityValue },
-    //                 { label: 'Harvest in', value: harvestValue },
-    //                 { label: 'Sunlight', value: `${sunExposure}%` },
-    //                 { label: 'Confidence', value: `${(det.confidence * 100).toFixed(0)}%` }
-    //             ];
-                
-    //             const detailsContainer = document.createElement('div');
-    //             detailsContainer.id = 'fruit-details-container';
-    //             detailsContainer.style.left = `${centerX}px`;
-    //             detailsContainer.style.top = `${centerY}px`;
-    //             const isNearHorizontalEdge = centerX < 160 || centerX > clientWidth - 160;
-    //             const isNearVerticalEdge = centerY < 160 || centerY > clientHeight - 160;
-    //             const baseAngle = isNearHorizontalEdge ? (centerX < 160 ? -90 : 90) : (isNearVerticalEdge ? (centerY < 160 ? 0 : 180) : 0);
-    //             const angleSpan = (isNearHorizontalEdge || isNearVerticalEdge) ? 180 : 360;
-    //             const angleIncrement = angleSpan / details.length;
-
-    //             details.forEach((item, i) => {
-    //                 const angle = (baseAngle + i * angleIncrement) * (Math.PI / 180);
-    //                 const ringX = 160 + Math.cos(angle) * 120;
-    //                 const ringY = 160 + Math.sin(angle) * 120;
-    //                 detailsContainer.innerHTML += `
-    //                     <div class="info-ring" style="left: ${ringX - 40}px; top: ${ringY - 40}px;">
-    //                         <svg class="info-ring-svg" width="80" height="80" viewBox="0 0 90 90" style="animation-delay: ${i * 0.1}s"><circle cx="45" cy="45" r="35"/></svg>
-    //                         <span class="info-value">${item.value}</span><span class="info-label">${item.label}</span>
-    //                     </div>
-    //                     <svg class="absolute inset-0 w-full h-full"><line class="connector-line" x1="160" y1="160" x2="${ringX}" y2="${ringY}" /></svg>
-    //                 `;
-    //             });
-    //             detectionContainer.appendChild(detailsContainer);
-    //             setTimeout(() => detailsContainer.classList.add('visible'), 50);
-    //         });
-    //         detectionContainer.appendChild(marker);
-    //     });
-    // };
-
     const renderDetections = (detections) => {
         detectionContainer.innerHTML = '';
-        
-        // Lấy kích thước khung hình hiển thị
+        const staticImage = overlayCanvas; 
         const { clientWidth, clientHeight } = videoContainer;
         const naturalWidth = realtimeVideo.videoWidth;
         const naturalHeight = realtimeVideo.videoHeight;
         if (!naturalWidth || !naturalHeight) return;
 
-        // Tính toán tỷ lệ scale (Giữ nguyên logic cũ của bạn)
         const imageAspect = naturalWidth / naturalHeight;
         const containerAspect = clientWidth / clientHeight;
         let scale, offsetX = 0, offsetY = 0;
@@ -1151,7 +1219,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const fruitDetections = detections.filter(d => allowedFruits.includes(d.label));
 
         fruitDetections.forEach((det) => {
-            // Tính vị trí vẽ dấu chấm
             const [x1, y1, x2, y2] = det.box;
             const centerX = ((x1 + x2) / 2) * scale + offsetX;
             const centerY = ((y1 + y2) / 2) * scale + offsetY;
@@ -1161,53 +1228,32 @@ document.addEventListener('DOMContentLoaded', () => {
             marker.style.left = `${centerX}px`;
             marker.style.top = `${centerY}px`;
 
-            // --- SỰ KIỆN CLICK (ĐÃ NÂNG CẤP) ---
-            marker.addEventListener('click', async (e) => {
+            marker.addEventListener('click', (e) => {
                 e.stopPropagation();
-                hideFruitDetails(); // Ẩn cái cũ nếu đang mở
+                hideFruitDetails();
 
-                // 1. Tạo container hiển thị
+                const sunExposure = Math.round(85 - (centerY / clientHeight) * 20);
+                const qualityValue = (det.box[0] + det.box[1]) % 2 === 0 ? 'Good' : 'Avg';
+                const harvestValue = `${Math.round((det.box[2] % 10) + 5)} days`;
+                const details = [
+                    { label: 'Type', value: det.label.charAt(0).toUpperCase() + det.label.slice(1) },
+                    { label: 'Quality', value: qualityValue },
+                    { label: 'Harvest in', value: harvestValue },
+                    { label: 'Sunlight', value: `${sunExposure}%` },
+                    { label: 'Confidence', value: `${(det.confidence * 100).toFixed(0)}%` }
+                ];
+                
                 const detailsContainer = document.createElement('div');
                 detailsContainer.id = 'fruit-details-container';
                 detailsContainer.style.left = `${centerX}px`;
                 detailsContainer.style.top = `${centerY}px`;
-                
-                // 2. Hiển thị Loading (UX cực quan trọng khi gọi API)
-                // CSS spin có sẵn trong Tailwind hoặc bạn thêm class xoay
-                detailsContainer.innerHTML = `
-                    <div class="info-ring" style="width:120px; top:-60px; left:-60px; justify-content:center;">
-                        <span class="info-label" style="position:static; margin-top:0;">Analyzing...</span>
-                    </div>`;
-                detectionContainer.appendChild(detailsContainer);
-                setTimeout(() => detailsContainer.classList.add('visible'), 10);
-
-                // 3. Lấy ảnh Base64 từ Canvas hiện tại
-                // overlayCanvas là cái canvas đang hiển thị ảnh tĩnh sau khi bấm "AI View"
-                const base64Image = overlayCanvas.toDataURL('image/png');
-
-                // 4. GỌI API (Truyền box và ảnh base64)
-                const data = await callFruitDetailAPI(det, base64Image);
-
-                // 5. Map dữ liệu API vào giao diện
-                // Backend nên trả về các field: type, quality, harvest_days, sunlight, confidence
-                const displayDetails = [
-                    { label: 'Type', value: data.type ? (data.type.charAt(0).toUpperCase() + data.type.slice(1)) : 'Unknown' },
-                    { label: 'Quality', value: data.quality || 'Unknown' },
-                    { label: 'Harvest in', value: data.harvest_days > 0 ? `${data.harvest_days} days` : 'Check again' },
-                    { label: 'Sunlight', value: data.sunlight > 0 ? `${data.sunlight}%` : '--' },
-                    { label: 'Confidence', value: data.confidence > 0 ? `${data.confidence}%` : `${(det.confidence * 100).toFixed(0)}%` }
-                ];
-
-                // 6. Render lại các vòng tròn thông số (Logic vẽ cũ của bạn)
-                detailsContainer.innerHTML = ''; // Xóa chữ Analyzing...
-                
                 const isNearHorizontalEdge = centerX < 160 || centerX > clientWidth - 160;
                 const isNearVerticalEdge = centerY < 160 || centerY > clientHeight - 160;
                 const baseAngle = isNearHorizontalEdge ? (centerX < 160 ? -90 : 90) : (isNearVerticalEdge ? (centerY < 160 ? 0 : 180) : 0);
                 const angleSpan = (isNearHorizontalEdge || isNearVerticalEdge) ? 180 : 360;
-                const angleIncrement = angleSpan / displayDetails.length;
+                const angleIncrement = angleSpan / details.length;
 
-                displayDetails.forEach((item, i) => {
+                details.forEach((item, i) => {
                     const angle = (baseAngle + i * angleIncrement) * (Math.PI / 180);
                     const ringX = 160 + Math.cos(angle) * 120;
                     const ringY = 160 + Math.sin(angle) * 120;
@@ -1219,8 +1265,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         <svg class="absolute inset-0 w-full h-full"><line class="connector-line" x1="160" y1="160" x2="${ringX}" y2="${ringY}" /></svg>
                     `;
                 });
+                detectionContainer.appendChild(detailsContainer);
+                setTimeout(() => detailsContainer.classList.add('visible'), 50);
             });
-            
             detectionContainer.appendChild(marker);
         });
     };
@@ -1268,7 +1315,7 @@ document.addEventListener('DOMContentLoaded', () => {
             formData.append('file', blob, 'snapshot.png');
 
             try {
-                const response = await fetch(`${API_AI}/predict/image`, { 
+                const response = await fetch('/predict/image', { 
                     method: 'POST',
                     body: formData,
                 });
@@ -1403,16 +1450,16 @@ document.addEventListener('DOMContentLoaded', () => {
         description: "Hình ảnh cho thấy sự xuất hiện của các đốm màu nâu đen, hơi sần sùi, tập trung chủ yếu trên mặt lá. Kích thước đốm không đều. Đây là triệu chứng rõ ràng của bệnh đốm đen do nấm *Venturia inaequalis*. Bệnh nặng có thể gây rụng lá sớm.",
         recommendation: "Loại bỏ và tiêu hủy các lá bị nhiễm bệnh nặng để giảm nguồn lây lan. Cải thiện thông thoáng cho tán cây. Sử dụng thuốc trừ nấm phù hợp theo hướng dẫn, phun định kỳ vào giai đoạn nhạy cảm của cây (ra hoa, đậu quả non). Vệ sinh vườn sạch sẽ vào cuối vụ."
     },
-    // Bạn có thể thêm các ảnh khác vào đây theo cấu trúc tương tự:
-    // "ten_file_anh.jpg": {
-    //     status: "HEALTHY" | "DISEASED" | "UNKNOWN",
-    //     title: "Tiêu đề kết quả",
-    //     description: "Mô tả chi tiết",
-    //     recommendation: "Đề xuất xử lý (có thể bỏ trống nếu không cần)"
-    // }
-};
-let aiProcessingTimeout = null; // Biến để lưu timeout mô phỏng
-let aiProcessingInterval = null; // Biến để cập nhật timer
+        // Bạn có thể thêm các ảnh khác vào đây theo cấu trúc tương tự:
+        // "ten_file_anh.jpg": {
+        //     status: "HEALTHY" | "DISEASED" | "UNKNOWN",
+        //     title: "Tiêu đề kết quả",
+        //     description: "Mô tả chi tiết",
+        //     recommendation: "Đề xuất xử lý (có thể bỏ trống nếu không cần)"
+        // }
+    };
+    let aiProcessingTimeout = null; // Biến để lưu timeout mô phỏng
+    let aiProcessingInterval = null; // Biến để cập nhật timer
 
 // --- THÊM MỚI: HÀM CHO AI-TOOL ---
 
@@ -1463,45 +1510,45 @@ function hideAiProcessing() {
  * @param {object} resultData - Đối tượng kết quả từ aiAnalysisDatabase
  * @param {string} fileName - Tên tệp gốc để hiển thị lỗi
  */
-function renderAiAnalysisResults(resultData, fileName) {
-    hideAiProcessing(); // Đảm bảo overlay đã ẩn
+    function renderAiAnalysisResults(resultData, fileName) {
+        hideAiProcessing(); // Đảm bảo overlay đã ẩn
 
-    // Trường hợp không tìm thấy tệp trong database
-    if (!resultData) {
+        // Trường hợp không tìm thấy tệp trong database
+        if (!resultData) {
+            aiResultsContentReal.innerHTML = `
+                <div class="flex items-start gap-3 mb-4"> <svg class="status-icon status-unknown flex-shrink-0" fill="none" stroke-width="1.5" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z"></path></svg>
+                    <div> <h3 class="text-2xl font-bold status-unknown">Không thể phân tích</h3>
+                        <p class="text-gray-300 mt-2">Tên tệp <code class="font-mono text-amber-400">${fileName}</code> không khớp với bất kỳ dữ liệu nào trong cơ sở phân tích. Vui lòng thử lại với các tệp ảnh được hỗ trợ (ví dụ: <code>img1.jpg</code>, <code>img2.jpg</code>).</p>
+                    </div>
+                </div>
+            `;
+            return;
+        }
+
+        // Trường hợp tìm thấy kết quả
+        const isHealthy = resultData.status === 'HEALTHY';
+        const isDiseased = resultData.status === 'DISEASED';
+        const statusClass = isHealthy ? 'status-healthy' : (isDiseased ? 'status-diseased' : 'status-unknown');
+        
+        // Icon SVG
+        const statusIcon = isHealthy 
+            ? `<svg class="status-icon status-healthy flex-shrink-0" fill="none" stroke-width="1.5" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"></path></svg>`
+            : (isDiseased 
+                ? `<svg class="status-icon status-diseased flex-shrink-0" fill="none" stroke-width="1.5" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z"></path></svg>`
+                : `<svg class="status-icon status-unknown flex-shrink-0" fill="none" stroke-width="1.5" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z"></path></svg>`
+            );
+
         aiResultsContentReal.innerHTML = `
-            <div class="flex items-start gap-3 mb-4"> <svg class="status-icon status-unknown flex-shrink-0" fill="none" stroke-width="1.5" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z"></path></svg>
-                <div> <h3 class="text-2xl font-bold status-unknown">Không thể phân tích</h3>
-                    <p class="text-gray-300 mt-2">Tên tệp <code class="font-mono text-amber-400">${fileName}</code> không khớp với bất kỳ dữ liệu nào trong cơ sở phân tích. Vui lòng thử lại với các tệp ảnh được hỗ trợ (ví dụ: <code>img1.jpg</code>, <code>img2.jpg</code>).</p>
+            <div class="flex items-start gap-3 mb-4"> ${statusIcon}
+                <div> <h3 class="text-2xl font-bold ${statusClass}">${resultData.title}</h3>
+                    <p class="text-sm text-gray-400">Tên tệp gốc: <code>${fileName}</code></p>
                 </div>
             </div>
+            <hr class="border-gray-700 my-4"> <h4 class="text-lg font-semibold text-white mb-2">Mô tả chi tiết</h4>
+            <p class="text-gray-300 mb-4 text-justify">${resultData.description}</p> ${resultData.recommendation ? `
+                <h4 class="text-lg font-semibold text-white mt-5 mb-2">Đề xuất xử lý</h4> <p class="text-gray-300 text-justify">${resultData.recommendation}</p> ` : ''}
         `;
-        return;
     }
-
-    // Trường hợp tìm thấy kết quả
-    const isHealthy = resultData.status === 'HEALTHY';
-    const isDiseased = resultData.status === 'DISEASED';
-    const statusClass = isHealthy ? 'status-healthy' : (isDiseased ? 'status-diseased' : 'status-unknown');
-    
-    // Icon SVG
-    const statusIcon = isHealthy 
-        ? `<svg class="status-icon status-healthy flex-shrink-0" fill="none" stroke-width="1.5" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"></path></svg>`
-        : (isDiseased 
-            ? `<svg class="status-icon status-diseased flex-shrink-0" fill="none" stroke-width="1.5" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z"></path></svg>`
-            : `<svg class="status-icon status-unknown flex-shrink-0" fill="none" stroke-width="1.5" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z"></path></svg>`
-          );
-
-    aiResultsContentReal.innerHTML = `
-        <div class="flex items-start gap-3 mb-4"> ${statusIcon}
-            <div> <h3 class="text-2xl font-bold ${statusClass}">${resultData.title}</h3>
-                 <p class="text-sm text-gray-400">Tên tệp gốc: <code>${fileName}</code></p>
-            </div>
-        </div>
-        <hr class="border-gray-700 my-4"> <h4 class="text-lg font-semibold text-white mb-2">Mô tả chi tiết</h4>
-        <p class="text-gray-300 mb-4 text-justify">${resultData.description}</p> ${resultData.recommendation ? `
-            <h4 class="text-lg font-semibold text-white mt-5 mb-2">Đề xuất xử lý</h4> <p class="text-gray-300 text-justify">${resultData.recommendation}</p> ` : ''}
-    `;
-}
 
     // --- Thêm Event Listener cho AI-TOOL ---
     // (Dán vào bên trong sự kiện 'DOMContentLoaded', gần các listener khác)
@@ -1559,6 +1606,9 @@ function renderAiAnalysisResults(resultData, fileName) {
         // Reset giá trị input để cho phép tải lại cùng 1 file
         aiImageInput.value = ''; 
     });
+
+
+
 
     // Khởi động app
     handleNavigation('login'); 

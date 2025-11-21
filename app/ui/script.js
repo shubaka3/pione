@@ -1,13 +1,12 @@
-// --- DOM Elements (GỘP TỪ V13 VÀ V18) ---
-// (Giữ nguyên từ V23)
+// --- DOM Elements (Đã cập nhật) ---
 const loginView = document.getElementById('login-view'), 
       appView = document.getElementById('app-view'),
-      contentArea = document.getElementById('content-area'), // TỪ V18
+      contentArea = document.getElementById('content-area'),
       dashboardView = document.getElementById('dashboard-view'), 
       detailView = document.getElementById('detail-view'),
       productGrid = document.getElementById('product-grid'), 
       loginForm = document.getElementById('login-form'),
-      loginError = document.getElementById('login-error'), // Thêm
+      loginError = document.getElementById('login-error'),
       logoutBtn = document.getElementById('logout-btn'), 
       welcomeUser = document.getElementById('welcome-user'),
       backToDashboardBtn = document.getElementById('back-to-dashboard-btn'),
@@ -24,19 +23,20 @@ const loginView = document.getElementById('login-view'),
       viewModeAiBtn = document.getElementById('view-mode-ai'),
       videoContainer = document.getElementById('video-container'), 
       detectionContainer = document.getElementById('detection-container');
-// === THÊM DOM CHO ANALYTICS ===
+// === DOM CHO ANALYTICS ===
 const analyticsView = document.getElementById('analytics-view'),
       analyticsPlantGridView = document.getElementById('analytics-plant-grid-view'),
       analyticsProductGrid = document.getElementById('analytics-product-grid'),
       analyticsHistoryView = document.getElementById('analytics-history-view'),
       analyticsBackBtn = document.getElementById('analytics-back-btn'),
       analyticsHistoryTitle = document.getElementById('analytics-history-title'),
-      historyTimeline = document.getElementById('history-timeline');
-// --- BỔ SUNG DOM TỪ V18 (VÀ V13) ---
-const floatingSidebar = document.getElementById('floating-sidebar'), // TỪ V18
-      sidebarToggleBtn = document.getElementById('sidebar-toggle-btn'), // TỪ V18
-      mainNav = document.getElementById('main-nav'), // TỪ V18
-      viewTitle = document.getElementById('view-title'), // TỪ V18
+      historyTimeline = document.getElementById('history-timeline'),
+      qrCodeDisplay = document.getElementById('qr-code-display');
+// === DOM TỪ V18 ===
+const floatingSidebar = document.getElementById('floating-sidebar'),
+      sidebarToggleBtn = document.getElementById('sidebar-toggle-btn'),
+      mainNav = document.getElementById('main-nav'),
+      viewTitle = document.getElementById('view-title'),
       plantTimeEl = document.getElementById('plant-time'),
       plantWeatherEl = document.getElementById('plant-weather'),
       plantTempEl = document.getElementById('plant-temp'),
@@ -44,38 +44,103 @@ const floatingSidebar = document.getElementById('floating-sidebar'), // TỪ V18
       plantLightEl = document.getElementById('plant-light'),
       plantWaterEl = document.getElementById('plant-water'),
       plantLocationEl = document.getElementById('plant-location'),
-      aiResultsContent = document.getElementById('ai-results-content'); // TỪ V18
-// --- BỔ SUNG DOM CHO NÚT HÀNH ĐỘNG & TOAST ---
+      aiResultsContent = document.getElementById('ai-results-content');
+// === DOM CHO NÚT HÀNH ĐỘNG & TOAST ===
 const waterPlantBtn = document.getElementById('water-plant-btn');
 const fertilizePlantBtn = document.getElementById('fertilize-plant-btn');
-const harvestPlantBtn = document.getElementById('harvest-plant-btn'); // Thêm
-const fillWaterBtn = document.getElementById('fill-water-btn'); // THÊM MỚI
+const harvestPlantBtn = document.getElementById('harvest-plant-btn');
+const fillWaterBtn = document.getElementById('fill-water-btn');
 const toast = document.getElementById('toast-notification');
 let toastTimeout = null;
 
+// --- THÊM MỚI: DOM CHO SOUND DETECT ---
+const soundView = document.getElementById('sound-view');
+const soundCanvas = document.getElementById('sound-canvas');
+const soundLabel = document.getElementById('sound-label');
+const alertModal = document.getElementById('alert-modal');
+const alertMessage = document.getElementById('alert-message');
+const alertCloseBtn = document.getElementById('alert-close-btn');
+// --- THÊM MỚI: DOM CHO AI-TOOL ---
+const aiView = document.getElementById('ai-view'); // Thêm dòng này
+const aiImageInput = document.getElementById('ai-image-input');
+const aiImagePreview = document.getElementById('ai-image-preview');
+const aiImagePreviewPlaceholder = document.getElementById('ai-image-preview-placeholder');
+const aiResultsPanel = document.getElementById('ai-results-panel');
+const aiProcessingOverlay = document.getElementById('ai-processing-overlay');
+const aiProcessingTimer = document.getElementById('ai-processing-timer'); // Thêm dòng này
+const aiResultsContentReal = document.getElementById('ai-results-content-real');
+
+// --- THÊM MỚI: DOM CHO STATISTICS (FIX LỖI) ---
+const statisticsView = document.getElementById('statistics-view');
+// Biểu đồ
+const diseaseRiskChartEl = document.getElementById('disease-risk-chart');
+const pestRiskChartEl = document.getElementById('pest-risk-chart');
+// Rủi ro vận hành
+const statsWaterGaugeEl = document.getElementById('stats-water-gauge');
+const statsWaterCountdownEl = document.getElementById('stats-water-countdown');
+// KPIs
+const kpiYieldTotal = document.getElementById('kpi-yield-total');
+const kpiYieldReady = document.getElementById('kpi-yield-ready');
+const kpiRevenue = document.getElementById('kpi-revenue');
+const kpiDiseaseRisk = document.getElementById('kpi-disease-risk');
+// Báo cáo
+const statsYieldTotal = document.getElementById('stats-yield-total'); // ID này bị trùng với KPI, nhưng HTML dùng ID khác nhau (kpi-yield-total vs stats-yield-total)
+const statsYieldAi = document.getElementById('stats-yield-ai');
+const statsYieldHuman = document.getElementById('stats-yield-human');
+const statsYieldReady = document.getElementById('stats-yield-ready');
+const statsYieldDev = document.getElementById('stats-yield-dev');
+const statsQualityRate = document.getElementById('stats-quality-rate');
+const statsQualityDisease = document.getElementById('stats-quality-disease');
+const statsQualitySpoil = document.getElementById('stats-quality-spoil');
+// Dự báo
+const statsForecast1d = document.getElementById('stats-forecast-1d');
+const statsForecast3d = document.getElementById('stats-forecast-3d');
+const statsForecastQuality = document.getElementById('stats-forecast-quality');
+const statsMarketPrice = document.getElementById('stats-market-price');
+const statsFinanceProfit = document.getElementById('stats-finance-profit');
+// Hiệu suất
+const statsIotRobot = document.getElementById('stats-iot-robot');
+const statsIotPestDetect = document.getElementById('stats-iot-pest-detect');
+const statsIotPestSuccess = document.getElementById('stats-iot-pest-success');
+const statsIotPestReturn = document.getElementById('stats-iot-pest-return');
+// --- KẾT THÚC THÊM DOM CHO STATISTICS ---
+
+
 // --- API Configuration ---
-// (Giữ nguyên toàn bộ từ V23)
-const API_BASE_URL = "http://localhost:8000"; 
-const WEBRTC_URL_BASE_WS = `wss://ce2cb578c3d6.ngrok-free.app/stream/ws`; 
+const API_BASE_URL = "http://localhost:8002"; 
+const WEBRTC_URL_BASE_WS = `wss://aaaf09b39b57.ngrok-free.app/stream/ws`; 
 const WORKFLOW_WATERING_URL = "https://workflow.emg.edu.vn:5678/webhook/watering-plants";
 const WORKFLOW_FILL_WATER_URL = "https://workflow.emg.edu.vn:5678/webhook/fillwater"; 
 
 // --- State Management ---
-// (Giữ nguyên từ V23)
 let state = {
     isLoggedIn: false,
     currentUser: null,
-    token: null, // Thêm token
-    products: [], // Bắt đầu với mảng rỗng, sẽ tải từ API
+    token: null,
+    products: [],
     selectedProductId: null,
     isAiDetectionActive: false,
+    
+    // --- THÊM MỚI: State cho Âm thanh ---
+    audioContext: null,
+    analyserNode: null,
+    audioStream: null,
+    speechRecognition: null,
+    visualizationFrameId: null, // Để dừng/bắt đầu vẽ
+    currentSoundLabel: "...", // Label hiện tại của âm thanh
+    
+    // --- THÊM MỚI: State cho Thống Kê ---
+    charts: {
+        disease: null,
+        pest: null
+    },
+    waterCountdownInterval: null,
 };
 
 let clockInterval = null; 
 let dataFetchInterval = null; 
 
-// --- KHÔI PHỤC: WebRTC Service (Giữ nguyên từ V20/V23) ---
-// Logic này đã có trong V23, tôi đảm bảo nó được giữ nguyên.
+// --- WebRTC Service (Không đổi) ---
 const WebRTCService = {
     ws: null,
     pc: null,
@@ -152,7 +217,6 @@ const WebRTCService = {
     },
     
     renderStaticDetections: function(detectionData) {
-        // (Giữ nguyên logic V20/V23)
         if (!this.canvasContext || !detectionData || !detectionData.detections) return;
         const { detections, orig_shape } = detectionData;
         const canvas = this.canvasContext.canvas;
@@ -179,30 +243,59 @@ const WebRTCService = {
     }
 };
 
-// --- UI Functions ---
-// (Giữ nguyên các hàm UI từ V23)
+// --- UI Functions (Đã cập nhật) ---
 const showLoader = () => loader.classList.remove('view-hidden');
 const hideLoader = () => loader.classList.add('view-hidden');
 const showAddProductModal = () => { addProductForm.reset(); addProductModal.classList.add('modal-visible'); };
 const hideAddProductModal = () => { addProductModal.classList.remove('modal-visible'); };
 
-// (Hàm Toast từ V23)
+// THÊM MỚI: Hàm hiển thị/ẩn Alert
+const showAlert = (animal) => {
+    alertMessage.textContent = `Phát hiện ${animal === 'Giọng chim' ? 'tiếng chim' : 'tiếng chuột'} ở trong vườn của bạn!`;
+    alertModal.classList.add('modal-visible');
+};
+const hideAlert = () => {
+    alertModal.classList.remove('modal-visible');
+    // Reset lại label sau khi tắt alert
+    updateSoundLabel(""); 
+};
+
+// Hàm Toast (Không đổi)
 const showToast = (message, type = 'success') => {
     toast.textContent = message;
-    toast.className = 'show'; // Xóa các class cũ
-    toast.classList.add(type); // Thêm 'success' hoặc 'error'
+    toast.className = 'show';
+    toast.classList.add(type);
     if (toastTimeout) clearTimeout(toastTimeout);
     toastTimeout = setTimeout(() => {
         toast.className = '';
     }, 3000);
 };
 
-// (Hàm Navigation từ V23)
+// Hàm Navigation (Đã cập nhật)
 const handleNavigation = (viewId) => {
+    // Ẩn tất cả các view
     contentArea.querySelectorAll('main').forEach(view => view.classList.add('view-hidden'));
+    
+    // Dừng vẽ sóng âm nếu rời khỏi sound-view
+    if (state.visualizationFrameId) {
+        cancelAnimationFrame(state.visualizationFrameId);
+        state.visualizationFrameId = null;
+    }
+
+    // Dừng tài nguyên trang Thống kê (SỬA LỖI)
+    if (viewId !== 'statistics') {
+        stopStatisticsPage();
+    }
+
     const activeView = document.getElementById(`${viewId}-view`);
     if (activeView) {
         activeView.classList.remove('view-hidden');
+        // Nếu là sound-view, bắt đầu vẽ
+        if (viewId === 'sound') {
+            startSoundVisualization();
+        } else if (viewId === 'statistics') {
+            initStatisticsPage(); // THÊM MỚI
+        }
     } else if (viewId === 'login') {
         loginView.classList.remove('view-hidden');
         appView.classList.add('view-hidden');
@@ -225,9 +318,9 @@ const handleNavigation = (viewId) => {
     const activeLink = mainNav.querySelector(`.nav-link[data-view="${viewId}"]`);
     viewTitle.textContent = activeLink ? activeLink.querySelector('span').textContent : "Login";
     
-    // Đảm bảo dọn dẹp WebRTC khi rời detail view (Logic từ V20)
+    // Dọn dẹp WebRTC khi rời detail view (Không đổi)
     if (viewId !== 'detail' && (clockInterval || dataFetchInterval)) {
-        WebRTCService.disconnect(); // <-- TỪ V20
+        WebRTCService.disconnect();
         if (clockInterval) clearInterval(clockInterval);
         if (dataFetchInterval) clearInterval(dataFetchInterval);
         clockInterval = null;
@@ -235,9 +328,7 @@ const handleNavigation = (viewId) => {
     }
 };
 
-// --- Main Logic ---
-
-// (Giữ nguyên các hàm API từ V23)
+// --- Main Logic (Không đổi, chỉ thêm hàm mới) ---
 const renderDashboard = () => { 
     if (state.products.length === 0) {
         productGrid.innerHTML = `<p class="text-gray-400 col-span-full text-center">Không tìm thấy cây nào. Hãy thêm cây mới.</p>`;
@@ -332,6 +423,7 @@ const updateTreeStatus = async (treeId, newStatus) => {
     }
 };
 
+// --- HÀM LOGIN (Đã cập nhật) ---
 const handleLogin = async (e) => {
     e.preventDefault();
     showLoader();
@@ -361,6 +453,17 @@ const handleLogin = async (e) => {
         loginView.classList.add('view-hidden');
         appView.classList.remove('view-hidden');
         handleNavigation('dashboard');
+
+        // --- THÊM MỚI: Tự động khởi động nhận diện âm thanh ---
+        try {
+            await startSoundDetection();
+            showToast("Hệ thống âm thanh đã được kích hoạt.", "success");
+        } catch (err) {
+            console.error("Mic access failed on login:", err);
+            showToast("Không thể tự động kích hoạt micro. Bạn cần cho phép trong cài đặt trình duyệt.", "error");
+        }
+        // --- KẾT THÚC THÊM MỚI ---
+
     } catch (error) {
         console.error("Login error:", error);
         loginError.textContent = `Lỗi đăng nhập: ${error.message}`;
@@ -370,7 +473,12 @@ const handleLogin = async (e) => {
     }
 };
 
+// --- HÀM LOGOUT (Đã cập nhật) ---
 const handleLogout = () => {
+    // --- THÊM MỚI: Dừng hệ thống âm thanh ---
+    stopSoundDetection();
+    // --- KẾT THÚC THÊM MỚI ---
+
     handleNavigation('dashboard'); 
     showAnalyticsGrid(); 
     state.isLoggedIn = false; 
@@ -382,8 +490,7 @@ const handleLogout = () => {
     handleNavigation('login');
 };
 
-// --- KHÔI PHỤC: showDetailView (Gộp V20 + V23) ---
-// Hàm này sẽ gọi cả API (V23) và WebRTC (V20)
+// --- Detail View (Không đổi) ---
 const showDetailView = (productId) => {
     const product = state.products.find(p => p.productID == productId);
     if (!product) return;
@@ -394,22 +501,18 @@ const showDetailView = (productId) => {
     resetDetectionInfo(); 
     handleNavigation('detail'); 
     
-    // --- TỪ V20: Khởi chạy WebRTC ---
     WebRTCService.connect(productId, realtimeVideo, overlayCanvas);
     
     updateLiveTime(); 
     clockInterval = setInterval(updateLiveTime, 1000); 
     
-    // --- TỪ V23: Gọi API data thật ---
-    fetchTreeDetails(productId); // Hàm này bị thiếu trong V23, nhưng tôi sẽ thêm logic của nó vào fetchLatestReading
-    fetchLatestReading(productId); // Gọi lần đầu
+    fetchTreeDetails(productId);
+    fetchLatestReading(productId);
     dataFetchInterval = setInterval(() => {
         fetchLatestReading(productId);
     }, 10000); 
 };
 
-// --- KHÔI PHỤC: hideFruitDetails (Từ V20) ---
-// Hàm này cần thiết cho renderDetections
 const hideFruitDetails = () => { 
     const details = document.getElementById('fruit-details-container');
     if (details) {
@@ -418,14 +521,12 @@ const hideFruitDetails = () => {
     }
 };
 
-// --- CÁC HÀM CẬP NHẬT THÔNG TIN ---
 const updateLiveTime = () => {
     if (plantTimeEl) {
         plantTimeEl.textContent = new Date().toLocaleTimeString('vi-VN');
     }
 };
 
-// (Giữ nguyên từ V23)
 const updatePlantInfoUI = (data, location = null) => {
     let weatherText = data.weather_info || '--';
     if (weatherText === '--' || weatherText.trim() === '') {
@@ -445,23 +546,18 @@ const updatePlantInfoUI = (data, location = null) => {
     }
 };
 
-// (Giê nguyên từ V23, đã bao gồm logic fetchTreeDetails)
 const fetchLatestReading = async (treeId = null) => {
     const id = treeId || state.selectedProductId;
     if (!id) return;
-
     try {
-        // Lấy location từ state (V23 fetchTreeDetails)
         const product = state.products.find(p => p.productID == id);
         const location = product ? product.description.split(' | ')[1].replace('Vị trí: ', '') : '--';
-        
         const response = await authenticatedFetch(`${API_BASE_URL}/api/trees/${id}/readings/?skip=0&limit=1`);
         if (!response.ok) throw new Error('Failed to fetch readings');
-        
         const readings = await response.json();
         
         if (readings && readings.length > 0) {
-            updatePlantInfoUI(readings[0], location); // Truyền location vào
+            updatePlantInfoUI(readings[0], location);
         } else {
             updatePlantInfoUI({
                 temperature_c: 0,
@@ -475,14 +571,12 @@ const fetchLatestReading = async (treeId = null) => {
         console.error("Error fetching plant readings:", error);
     }
 };
-// (Hàm fetchTreeDetails bị thiếu trong V23, nhưng logic của nó đã được gộp vào fetchLatestReading)
+
 const fetchTreeDetails = (treeId) => {
-    // Logic này đã được gộp vào fetchLatestReading để lấy location
-    // Không cần hàm riêng
+    // Gộp trong fetchLatestReading
 };
 
-
-// (Giữ nguyên các hàm API Workflow và log từ V23)
+// --- Control & Log (Không đổi) ---
 const callWorkflowAPI = async (url, treeId) => {
     if (!treeId) {
         showToast("Lỗi: Không xác định được ID cây.", 'error');
@@ -499,7 +593,7 @@ const callWorkflowAPI = async (url, treeId) => {
             try {
                 const errorJson = await response.json();
                 errorDetail = errorJson.detail || errorDetail;
-            } catch (e) { /* Bỏ qua */ }
+            } catch (e) {}
             throw new Error(errorDetail);
         }
         const resultText = await response.text();
@@ -531,8 +625,7 @@ const logControlAction = async (commandType, commandValue) => {
     }
 };
 
-
-// === CÁC HÀM CHO TRANG ANALYTICS (Giữ nguyên V23) ===
+// bắt đầu --- Analytics View (Không đổi) ---
 const showAnalyticsGrid = () => {
     analyticsHistoryView.classList.add('view-hidden');
     analyticsPlantGridView.classList.remove('view-hidden');
@@ -560,28 +653,80 @@ const renderAnalyticsGrid = () => {
             </div>
         </div>`).join('');
 };
+// chạy ok nhưng sửa để có mã QR
+// const showAnalyticsHistory = async (productId) => {
+//     const product = state.products.find(p => p.productID == productId);
+//     if (!product) return;
+//     analyticsPlantGridView.classList.add('view-hidden');
+//     analyticsHistoryView.classList.remove('view-hidden');
+//     analyticsHistoryTitle.textContent = `Lịch sử chăm sóc: ${product.name}`;
+//     historyTimeline.innerHTML = '';
+//     showLoader();
+//     try {
+//         const response = await authenticatedFetch(`${API_BASE_URL}/api/trees/${productId}/control_history/`);
+//         if (!response.ok) throw new Error('Failed to fetch history');
+//         const historyData = await response.json();
+//         renderHistoryTimeline(historyData);
+//     } catch (error) {
+//         console.error("Error fetching history:", error);
+//         showToast("Không thể tải lịch sử.", "error");
+//         historyTimeline.innerHTML = `<p class="text-gray-400">Lỗi khi tải dữ liệu lịch sử.</p>`;
+//     } finally {
+//         hideLoader();
+//     }
+// };
 
-const showAnalyticsHistory = async (productId) => {
-    const product = state.products.find(p => p.productID == productId);
-    if (!product) return;
-    analyticsPlantGridView.classList.add('view-hidden');
-    analyticsHistoryView.classList.remove('view-hidden');
-    analyticsHistoryTitle.textContent = `Lịch sử chăm sóc: ${product.name}`;
-    historyTimeline.innerHTML = '';
-    showLoader();
-    try {
-        const response = await authenticatedFetch(`${API_BASE_URL}/api/trees/${productId}/control_history/`);
-        if (!response.ok) throw new Error('Failed to fetch history');
-        const historyData = await response.json();
-        renderHistoryTimeline(historyData);
-    } catch (error) {
-        console.error("Error fetching history:", error);
-        showToast("Không thể tải lịch sử.", "error");
-        historyTimeline.innerHTML = `<p class="text-gray-400">Lỗi khi tải dữ liệu lịch sử.</p>`;
-    } finally {
-        hideLoader();
-    }
-};
+    const showAnalyticsHistory = async (productId) => {
+        const product = state.products.find(p => p.productID == productId);
+        if (!product) return;
+
+        analyticsPlantGridView.classList.add('view-hidden');
+        analyticsHistoryView.classList.remove('view-hidden');
+        analyticsHistoryTitle.textContent = `Lịch sử chăm sóc: ${product.name}`;
+        historyTimeline.innerHTML = ''; // Xóa timeline cũ
+        qrCodeDisplay.innerHTML = ''; // Xóa mã QR cũ
+
+        showLoader();
+
+        try {
+            const response = await authenticatedFetch(`${API_BASE_URL}/api/trees/${productId}/control_history/`);
+            if (!response.ok) throw new Error('Failed to fetch history');
+            const historyData = await response.json();
+
+            // 1. Render timeline (như cũ)
+            renderHistoryTimeline(historyData);
+
+            // 2. TẠO MÃ QR (MỚI)
+            // -----------------------------------------------------------------
+            // !! QUAN TRỌNG: Bạn phải thay đổi URL này
+            // Đây là URL công khai mà người dùng sẽ thấy khi quét mã.
+            // Bạn cần tự xây dựng trang này (ví dụ: /public/history.html?id=... )
+            // -----------------------------------------------------------------
+            const publicHistoryUrl = `https://trang-web-cua-ban.com/history/${product.productID}`;
+
+            try {
+                new QRCode(qrCodeDisplay, {
+                    text: publicHistoryUrl,
+                    width: 200, // Kích thước QR (pixels)
+                    height: 200,
+                    colorDark : "#000000",
+                    colorLight : "#ffffff",
+                    correctLevel : QRCode.CorrectLevel.H // Mức độ sửa lỗi cao
+                });
+            } catch (qrError) {
+                console.error("Lỗi tạo QR code:", qrError);
+                qrCodeDisplay.innerHTML = "<p class='text-red-500 text-xs'>Lỗi tạo QR code.</p>";
+            }
+
+        } catch (error) {
+            console.error("Error fetching history:", error);
+            showToast("Không thể tải lịch sử.", "error");
+            historyTimeline.innerHTML = `<p class="text-gray-400">Lỗi khi tải dữ liệu lịch sử.</p>`;
+            qrCodeDisplay.innerHTML = "<p class='text-gray-400 text-xs text-center'>Không thể tạo QR.</p>";
+        } finally {
+            hideLoader();
+        }
+    };
 
 const renderHistoryTimeline = (historyData) => {
     if (!historyData || historyData.length === 0) {
@@ -590,18 +735,11 @@ const renderHistoryTimeline = (historyData) => {
     }
     historyTimeline.innerHTML = historyData.map(item => {
         const commandTime = new Date(item.command_time).toLocaleString('vi-VN', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
+            day: '2-digit', month: '2-digit', year: 'numeric',
+            hour: '2-digit', minute: '2-digit'
         });
-        const valueText = item.command_value 
-            ? `<p class="text-sm text-gray-400">Giá trị: <span class="text-white">${item.command_value}</span></p>` 
-            : '';
-        const statusText = item.status
-            ? `<p class="text-sm text-gray-400">Trạng thái: <span class="text-white">${item.status}</span></p>`
-            : '';
+        const valueText = item.command_value ? `<p class="text-sm text-gray-400">Giá trị: <span class="text-white">${item.command_value}</span></p>` : '';
+        const statusText = item.status ? `<p class="text-sm text-gray-400">Trạng thái: <span class="text-white">${item.status}</span></p>` : '';
         return `
             <li class="timeline-item">
                 <div class="timeline-dot"></div>
@@ -615,9 +753,9 @@ const renderHistoryTimeline = (historyData) => {
         `;
     }).join('');
 };
+/// kết thúc --- Analytics View ---
 
-
-// --- CÁC HÀM INFO AI (Giữ nguyên V23) ---
+// --- AI/Detection Info (Không đổi) ---
 const updateDetectionInfo = (detections) => {
     if (!detections || detections.length === 0) {
         aiResultsContent.innerHTML = '<p>Không phát hiện đối tượng nào.</p>';
@@ -639,9 +777,414 @@ const resetDetectionInfo = () => {
     }
 };
 
-// --- Event Listeners ---
+// --- THÊM MỚI: CÁC HÀM XỬ LÝ ÂM THANH ---
+
+/**
+ * Bắt đầu nhận diện âm thanh và giọng nói (chạy ngầm)
+ */
+const startSoundDetection = async () => {
+    // 1. Kiểm tra hỗ trợ
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+
+    if (!SpeechRecognition || !AudioContext) {
+        showToast("Trình duyệt không hỗ trợ API âm thanh hoặc giọng nói.", "error");
+        return Promise.reject("Unsupported browser");
+    }
+
+    // 2. Lấy quyền truy cập Micro
+    // (Phải được gọi từ một sự kiện do người dùng khởi xướng như 'click')
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    state.audioStream = stream;
+
+    // 3. Thiết lập Web Audio API (để vẽ sóng)
+    state.audioContext = new AudioContext();
+    const source = state.audioContext.createMediaStreamSource(stream);
+    state.analyserNode = state.audioContext.createAnalyser();
+    state.analyserNode.fftSize = 2048; // Kích thước mẫu
+    source.connect(state.analyserNode);
+
+    // 4. Thiết lập Web Speech API (để nhận diện giọng nói)
+    state.speechRecognition = new SpeechRecognition();
+    state.speechRecognition.lang = 'vi-VN';
+    state.speechRecognition.continuous = true; // Chạy liên tục
+    state.speechRecognition.interimResults = true; // Trả kết quả tạm thời
+
+    // 4.1. Xử lý khi có kết quả
+    state.speechRecognition.onresult = (event) => {
+        let interimTranscript = '';
+        let finalTranscript = '';
+
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+            if (event.results[i].isFinal) {
+                finalTranscript += event.results[i][0].transcript;
+            } else {
+                interimTranscript += event.results[i][0].transcript;
+            }
+        }
+        
+        // Ưu tiên chuỗi cuối cùng (final) nếu có
+        const detectedText = finalTranscript || interimTranscript;
+        updateSoundLabel(detectedText);
+    };
+
+    // 4.2. Tự động khởi động lại khi kết thúc
+    state.speechRecognition.onend = () => {
+        if (state.isLoggedIn) { // Chỉ khởi động lại nếu vẫn đang đăng nhập
+            state.speechRecognition.start();
+        }
+    };
+    
+    // 4.3. Xử lý lỗi
+    state.speechRecognition.onerror = (event) => {
+        console.error("Speech recognition error:", event.error);
+        if (event.error === 'no-speech') {
+            // Bỏ qua lỗi không có giọng nói, nó sẽ tự khởi động lại
+        }
+    };
+
+    // 5. Bắt đầu nhận diện
+    state.speechRecognition.start();
+    
+    // 6. Cập nhật label mặc định ban đầu
+    if (soundLabel) {
+        soundLabel.textContent = "Đang lắng nghe...";
+        soundLabel.classList.remove('detected');
+    }
+};
+
+/**
+ * Dừng hệ thống âm thanh khi logout
+ */
+const stopSoundDetection = () => {
+    if (state.speechRecognition) {
+        state.speechRecognition.stop();
+        state.speechRecognition = null;
+    }
+    if (state.audioStream) {
+        state.audioStream.getTracks().forEach(track => track.stop());
+        state.audioStream = null;
+    }
+    if (state.audioContext) {
+        state.audioContext.close();
+        state.audioContext = null;
+    }
+    if (state.visualizationFrameId) {
+        cancelAnimationFrame(state.visualizationFrameId);
+        state.visualizationFrameId = null;
+    }
+};
+
+/**
+ * Cập nhật Label âm thanh và kiểm tra trigger
+ */
+const updateSoundLabel = (transcript) => {
+    let label = "People talking"; // Mặc định
+    let isDetected = false;
+    
+    // Kiểm tra trigger "chíp"
+    if (transcript.toLowerCase().includes("chip")) {
+        // Random giữa chim và chuột
+        const randomAnimal = Math.random() < 0.5 ? "Giọng chim" : "Giọng chuột";
+        label = randomAnimal;
+        isDetected = true;
+    }
+
+    state.currentSoundLabel = label;
+
+    if (soundLabel) {
+        soundLabel.textContent = label;
+        if (isDetected) {
+            soundLabel.classList.add('detected');
+            // Chỉ hiển thị alert nếu modal đang không bật
+            if (!alertModal.classList.contains('modal-visible')) {
+                showAlert(label);
+            }
+        } else {
+            soundLabel.classList.remove('detected');
+        }
+    }
+    console.log("Updated sound label:", label);
+};
+
+/**
+ * Bắt đầu vẽ sóng âm (chỉ khi ở tab Sound Detect)
+ */
+const startSoundVisualization = () => {
+    if (!state.analyserNode || !soundCanvas) return;
+    if (state.visualizationFrameId) return; // Đã đang vẽ rồi
+
+    const canvasCtx = soundCanvas.getContext('2d');
+    const bufferLength = state.analyserNode.frequencyBinCount;
+    const dataArray = new Uint8Array(bufferLength);
+
+    const draw = () => {
+        state.visualizationFrameId = requestAnimationFrame(draw);
+
+        state.analyserNode.getByteTimeDomainData(dataArray); // Lấy data sóng âm
+
+        // Lấy kích thước thật của canvas
+        const width = soundCanvas.clientWidth;
+        const height = soundCanvas.clientHeight;
+        soundCanvas.width = width;
+        soundCanvas.height = height;
+
+        // Xóa canvas
+        canvasCtx.fillStyle = '#1f2937'; // Màu nền (card-color)
+        canvasCtx.fillRect(0, 0, width, height);
+
+        // Bắt đầu vẽ
+        canvasCtx.lineWidth = 2;
+        canvasCtx.strokeStyle = '#22c55e'; // Màu sóng (primary-accent)
+        canvasCtx.beginPath();
+
+        const sliceWidth = width * 1.0 / bufferLength;
+        let x = 0;
+
+        for (let i = 0; i < bufferLength; i++) {
+            const v = dataArray[i] / 128.0; // Giá trị từ 0.0 -> 2.0
+            const y = v * height / 2;
+
+            if (i === 0) {
+                canvasCtx.moveTo(x, y);
+            } else {
+                canvasCtx.lineTo(x, y);
+            }
+
+            x += sliceWidth;
+        }
+
+        canvasCtx.lineTo(width, height / 2);
+        canvasCtx.stroke();
+    };
+
+    draw();
+};
+
+
+
+    // --- THÊM MỚI: CÁC HÀM CHO TRANG THỐNG KÊ (ĐÃ SỬA LỖI) ---
+
+    /**
+     * Khởi tạo dữ liệu, biểu đồ, và countdown cho trang Thống Kê
+     */
+    function initStatisticsPage() {
+        // 1. Cập nhật dữ liệu (sử dụng biến đã khai báo)
+        
+        // KPIs
+        kpiYieldTotal.textContent = '100 kg';
+        kpiYieldReady.textContent = '22 kg';
+        kpiRevenue.textContent = '7.000.000đ';
+        kpiDiseaseRisk.textContent = '10% (Thấp)';
+
+        // Báo cáo
+        statsYieldAi.textContent = '40 kg';
+        statsYieldHuman.textContent = '60 kg';
+        statsYieldReady.textContent = '22 kg';
+        statsYieldDev.textContent = '140 kg';
+        statsQualityRate.textContent = '92%';
+        statsQualityDisease.textContent = '4 lần';
+        statsQualitySpoil.textContent = '2%';
+        
+        // Dự báo
+        statsForecast1d.textContent = '~50 kg';
+        statsForecast3d.textContent = '~112 kg';
+        statsForecastQuality.textContent = '94% Loại A';
+        statsMarketPrice.textContent = '70.000đ/kg';
+        statsFinanceProfit.textContent = '700.000 đ';
+        
+        // Hiệu suất
+        statsIotRobot.textContent = '40%';
+        statsIotPestDetect.textContent = '8 lần';
+        statsIotPestSuccess.textContent = '100% (8/8)';
+        statsIotPestReturn.textContent = '40%';
+
+
+        // 2. Vẽ biểu đồ
+        renderDiseaseChart();
+        renderPestChart();
+
+        // 3. Bắt đầu countdown
+        startWaterCountdown();
+    }
+
+    /**
+     * Dọn dẹp tài nguyên (biểu đồ, interval) khi rời trang Thống Kê
+     */
+    function stopStatisticsPage() {
+        if (state.charts.disease) {
+            state.charts.disease.destroy();
+            state.charts.disease = null;
+        }
+        if (state.charts.pest) {
+            state.charts.pest.destroy();
+            state.charts.pest = null;
+        }
+        if (state.waterCountdownInterval) {
+            clearInterval(state.waterCountdownInterval);
+            state.waterCountdownInterval = null;
+        }
+    }
+
+    /**
+     * Vẽ biểu đồ đường (Line Chart) cho Rủi ro Bệnh
+     */
+    function renderDiseaseChart() {
+        // Kiểm tra nếu thẻ canvas không tồn tại (SỬA LỖI)
+        if (!diseaseRiskChartEl) {
+            console.error("Không tìm thấy phần tử 'disease-risk-chart'.");
+            return;
+        }
+        if (state.charts.disease) {
+            state.charts.disease.destroy();
+        }
+        const ctx = diseaseRiskChartEl.getContext('2d');
+        state.charts.disease = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'],
+                datasets: [{
+                    label: 'Nguy cơ bệnh (%)',
+                    data: [5, 8, 10, 12, 15, 12, 10], // Dữ liệu 7 ngày, ngày cuối 10%
+                    borderColor: '#f97316', // text-warning (amber-500)
+                    backgroundColor: 'rgba(249, 115, 22, 0.1)',
+                    fill: true,
+                    tension: 0.3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 30, // Max 30%
+                        ticks: { color: '#9ca3af' }, // text-gray-400
+                        grid: { color: '#4b5563' } // border-gray-600
+                    },
+                    x: {
+                        ticks: { color: '#9ca3af' },
+                        grid: { display: false }
+                    }
+                },
+                plugins: {
+                    legend: { labels: { color: '#e5e7eb' } } // text-gray-200
+                }
+            }
+        });
+    }
+
+    /**
+     * Vẽ biểu đồ cột (Bar Chart) cho Rủi ro Thú hại
+     */
+    function renderPestChart() {
+        // Kiểm tra nếu thẻ canvas không tồn tại (SỬA LỖI)
+        if (!pestRiskChartEl) {
+            console.error("Không tìm thấy phần tử 'pest-risk-chart'.");
+            return;
+        }
+        if (state.charts.pest) {
+            state.charts.pest.destroy();
+        }
+        const ctx = pestRiskChartEl.getContext('2d');
+        state.charts.pest = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Chuột', 'Chim'],
+                datasets: [{
+                    label: 'Số lần phát hiện (7 ngày qua)',
+                    data: [5, 3], // Tổng 8, khớp với IoT
+                    backgroundColor: [
+                        'rgba(239, 68, 68, 0.6)', // text-red-500
+                        'rgba(59, 130, 246, 0.6)' // text-blue-500
+                    ],
+                    borderColor: [
+                        '#ef4444',
+                        '#3b82f6'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                indexAxis: 'y', // Làm biểu đồ ngang cho dễ nhìn
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        ticks: { color: '#9ca3af', stepSize: 1 },
+                        grid: { color: '#4b5563' }
+                    },
+                    y: {
+                        ticks: { color: '#e5e7eb' },
+                        grid: { display: false }
+                    }
+                },
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+    }
+
+    /**
+     * Cập nhật thanh gauge và text cho bồn nước (SỬA LỖI)
+     */
+    function startWaterCountdown() {
+        // Kiểm tra phần tử (SỬA LỖI)
+        if (!statsWaterGaugeEl || !statsWaterCountdownEl) {
+            console.error("Không tìm thấy phần tử 'stats-water-gauge' hoặc 'stats-water-countdown'.");
+            return;
+        }
+        
+        if (state.waterCountdownInterval) {
+            clearInterval(state.waterCountdownInterval);
+        }
+        
+        // Đây là logic giả định cho "Còn 4 lần tưới" (ví dụ: 4/10 lần)
+        const totalWaterings = 10;
+        let remainingWaterings = 4; 
+
+        const updateWaterGauge = () => {
+            if (remainingWaterings < 0) remainingWaterings = 0;
+            
+            const percentage = (remainingWaterings / totalWaterings) * 100;
+            
+            statsWaterGaugeEl.style.width = `${percentage}%`;
+            statsWaterCountdownEl.textContent = `Còn ${remainingWaterings} Lần Tưới`;
+
+            // Đổi màu nếu sắp hết
+            if (remainingWaterings <= 2) {
+                statsWaterGaugeEl.style.backgroundColor = '#ef4444'; // text-red-500
+                statsWaterCountdownEl.classList.add('text-red-400');
+            } else if (remainingWaterings <= 5) {
+                statsWaterGaugeEl.style.backgroundColor = '#f59e0b'; // text-yellow-500
+                statsWaterCountdownEl.classList.add('text-yellow-400');
+            } else {
+                statsWaterGaugeEl.style.backgroundColor = '#3b82f6'; // text-blue-500
+                statsWaterCountdownEl.classList.remove('text-red-400', 'text-yellow-400');
+            }
+            
+            // Đây là phần mô phỏng, bạn có thể xóa/thay đổi interval
+            // Ví dụ: Giả lập việc tưới nước sau mỗi 30 giây để demo
+            // if (remainingWaterings > 0) {
+            //     remainingWaterings--;
+            // } else {
+            //     clearInterval(state.waterCountdownInterval);
+            // }
+        };
+
+        updateWaterGauge(); // Chạy ngay lần đầu
+        
+        // Bỏ interval đi, chỉ cập nhật 1 lần khi tải trang
+        // Bạn có thể kích hoạt lại `startWaterCountdown()` khi có sự kiện tưới cây
+        // state.waterCountdownInterval = setInterval(updateWaterGauge, 30000); // Ví dụ: 30 giây
+    }
+
+
+// --- Event Listeners (Đã cập nhật) ---
 document.addEventListener('DOMContentLoaded', () => {
-    // (Giữ nguyên các listener từ V23)
+    // Listeners (Không đổi)
     loginForm.addEventListener('submit', handleLogin);
     logoutBtn.addEventListener('click', handleLogout);
     
@@ -670,9 +1213,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
     
-    // Đảm bảo back-btn dọn dẹp WebRTC (Logic V20)
     backToDashboardBtn.addEventListener('click', () => {
-        WebRTCService.disconnect(); // <-- TỪ V20
+        WebRTCService.disconnect();
         if (clockInterval) clearInterval(clockInterval);
         if (dataFetchInterval) clearInterval(dataFetchInterval);
         clockInterval = null;
@@ -681,7 +1223,6 @@ document.addEventListener('DOMContentLoaded', () => {
         handleNavigation('dashboard');
     });
 
-    // (Giữ nguyên listener V23)
     addProductBtn.addEventListener('click', showAddProductModal);
     addProductCancelBtn.addEventListener('click', hideAddProductModal);
     
@@ -710,7 +1251,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // (Giữ nguyên listener V23, bao gồm cả gọi showDetailView)
     productGrid.addEventListener('click', (e) => {
         const toggleBtn = e.target.closest('.btn-toggle-active');
         if (toggleBtn) {
@@ -723,17 +1263,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const card = e.target.closest('.product-card-main-area');
         if (card) {
             const productId = card.closest('[data-product-id]').dataset.productId;
-            showDetailView(productId); // <-- Chứa logic WebRTC từ V20
+            showDetailView(productId);
         }
     });
     
-    // --- KHÔI PHỤC: Listener từ V20 ---
     detectionContainer.addEventListener('click', hideFruitDetails);
 
-    // --- KHÔI PHỤC: Hàm renderDetections (Từ V20) ---
-    // Đây là hàm quan trọng nhất tạo hiệu ứng UI
-    // (Phiên bản V23 đã có, nhưng tôi copy lại từ V20 để đảm bảo,
-    // và dùng bộ lọc trái cây mở rộng của V23)
     const renderDetections = (detections) => {
         detectionContainer.innerHTML = '';
         const staticImage = overlayCanvas; 
@@ -754,7 +1289,6 @@ document.addEventListener('DOMContentLoaded', () => {
             offsetX = (clientWidth - naturalWidth * scale) / 2;
         }
 
-        // Sử dụng bộ lọc mở rộng từ V23
         const allowedFruits = ['apple', 'orange', 'fruit', 'tomato', 'grape']; 
         const fruitDetections = detections.filter(d => allowedFruits.includes(d.label));
 
@@ -772,7 +1306,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 e.stopPropagation();
                 hideFruitDetails();
 
-                // Logic tạo data giả lập (từ V20)
                 const sunExposure = Math.round(85 - (centerY / clientHeight) * 20);
                 const qualityValue = (det.box[0] + det.box[1]) % 2 === 0 ? 'Good' : 'Avg';
                 const harvestValue = `${Math.round((det.box[2] % 10) + 5)} days`;
@@ -784,7 +1317,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     { label: 'Confidence', value: `${(det.confidence * 100).toFixed(0)}%` }
                 ];
                 
-                // Logic render vòng tròn (từ V20)
                 const detailsContainer = document.createElement('div');
                 detailsContainer.id = 'fruit-details-container';
                 detailsContainer.style.left = `${centerX}px`;
@@ -814,21 +1346,21 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
 
-    // --- KHÔI PHỤC: Logic V20 trong Nút Normal ---
     viewModeNormalBtn.addEventListener('click', () => {
         state.isAiDetectionActive = false;
-        detectionContainer.innerHTML = ''; // <-- Từ V20
-        hideFruitDetails(); // <-- Từ V20
+        detectionContainer.innerHTML = '';
+        hideFruitDetails();
         resetDetectionInfo();
-        WebRTCService.canvasContext.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height); // <-- Từ V20
+        // SỬA LỖI: Thêm kiểm tra null cho canvasContext
+        if (WebRTCService.canvasContext) {
+            WebRTCService.canvasContext.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
+        }
         overlayCanvas.style.opacity = 0;
         realtimeVideo.style.opacity = 1;
         viewModeNormalBtn.classList.replace('btn-secondary', 'btn-primary');
         viewModeAiBtn.classList.replace('btn-primary', 'btn-secondary');
     });
 
-    // --- KHÔI PHỤC: Logic V20 + V23 trong Nút AI ---
-    // Gộp cả 2: Gọi AI (V20) VÀ Lưu capture (V23)
     viewModeAiBtn.addEventListener('click', async () => {
         if (state.isAiDetectionActive) return;
         showLoader();
@@ -840,7 +1372,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const videoHeight = video.videoHeight;
 
         if (videoWidth === 0 || videoHeight === 0) {
-            showToast("Không thể chụp ảnh, video chưa sẵn sàng.", "error"); // (V23)
+            showToast("Không thể chụp ảnh, video chưa sẵn sàng.", "error");
             hideLoader();
             return;
         }
@@ -851,7 +1383,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         canvas.toBlob(async (blob) => {
             if (!blob) {
-                showToast("Không thể tạo ảnh từ video.", "error"); // (V23)
+                showToast("Không thể tạo ảnh từ video.", "error");
                 hideLoader();
                 return;
             }
@@ -860,19 +1392,14 @@ document.addEventListener('DOMContentLoaded', () => {
             formData.append('file', blob, 'snapshot.png');
 
             try {
-                // Bước 1: Gọi API AI (từ V20)
-                // Endpoint '/predict/image' này là relative,
-                // giả định bạn có một proxy hoặc server đang chạy
                 const response = await fetch('/predict/image', { 
                     method: 'POST',
                     body: formData,
                 });
 
                 if (!response.ok) throw new Error(`Server error: ${response.statusText}`);
-
                 const results = await response.json();
                 
-                // Bước 2: Xử lý kết quả AI (từ V20)
                 if (results && results.detections && results.detections.length > 0) {
                     state.isAiDetectionActive = true;
                     video.style.opacity = 0;
@@ -880,11 +1407,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     viewModeAiBtn.classList.replace('btn-secondary', 'btn-primary');
                     viewModeNormalBtn.classList.replace('btn-primary', 'btn-secondary');
                     
-                    renderDetections(results.detections); // <-- Từ V20
-                    WebRTCService.renderStaticDetections(results); // <-- Từ V20
+                    renderDetections(results.detections);
+                    WebRTCService.renderStaticDetections(results);
                     updateDetectionInfo(results.detections);
                     
-                    // Bước 3: Lưu ảnh chụp (từ V23)
                     try {
                         const captureFormData = new FormData();
                         captureFormData.append('file', blob, 'snapshot.png');
@@ -906,15 +1432,14 @@ document.addEventListener('DOMContentLoaded', () => {
                         console.error("Error saving capture:", captureError);
                         showToast("Phân tích AI thành công, nhưng lỗi khi lưu ảnh.", "error");
                     }
-
                 } else {
-                    showToast("Không phát hiện đối tượng nào.", "success"); // (V23)
+                    showToast("Không phát hiện đối tượng nào.", "success");
                     updateDetectionInfo([]);
                     ctx.clearRect(0, 0, canvas.width, canvas.height);
                 }
             } catch (error) {
                 console.error("AI analysis error:", error);
-                showToast("Lỗi trong quá trình phân tích ảnh.", "error"); // (V23)
+                showToast("Lỗi trong quá trình phân tích ảnh.", "error");
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
             } finally {
                 hideLoader();
@@ -922,7 +1447,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 'image/png');
     });
     
-    // (Giữ nguyên các listener từ V23)
     analyticsProductGrid.addEventListener('click', (e) => {
         const toggleBtn = e.target.closest('.btn-toggle-active');
         if (toggleBtn) {
@@ -986,6 +1510,182 @@ document.addEventListener('DOMContentLoaded', () => {
             hideLoader();
         }
     });
+
+    // --- THÊM MỚI: Listener cho nút đóng Alert ---
+    alertCloseBtn.addEventListener('click', hideAlert);
+
+    const aiAnalysisDatabase = {
+    "img1.jpg": {
+        status: "HEALTHY", // Trạng thái: KHOẺ MẠNH
+        title: "Lá Táo Khoẻ Mạnh",
+        description: "Phân tích không tìm thấy dấu hiệu bệnh lý rõ rệt. Lá có màu xanh lục tươi sáng, bề mặt phẳng, không có đốm bất thường hay biến dạng. Gân lá rõ ràng, cấu trúc tổng thể bình thường.",
+        recommendation: "Tiếp tục duy trì chế độ chăm sóc hiện tại. Đảm bảo cung cấp đủ nước, ánh sáng và dinh dưỡng cân đối. Theo dõi định kỳ để phát hiện sớm các dấu hiệu bất thường."
+    },
+    "img2.jpg": {
+        status: "DISEASED", // Trạng thái: CÓ BỆNH
+        title: "Phát hiện: Bệnh Đốm Đen (Apple Scab)",
+        description: "Hình ảnh cho thấy sự xuất hiện của các đốm màu nâu đen, hơi sần sùi, tập trung chủ yếu trên mặt lá. Kích thước đốm không đều. Đây là triệu chứng rõ ràng của bệnh đốm đen do nấm *Venturia inaequalis*. Bệnh nặng có thể gây rụng lá sớm.",
+        recommendation: "Loại bỏ và tiêu hủy các lá bị nhiễm bệnh nặng để giảm nguồn lây lan. Cải thiện thông thoáng cho tán cây. Sử dụng thuốc trừ nấm phù hợp theo hướng dẫn, phun định kỳ vào giai đoạn nhạy cảm của cây (ra hoa, đậu quả non). Vệ sinh vườn sạch sẽ vào cuối vụ."
+    },
+        // Bạn có thể thêm các ảnh khác vào đây theo cấu trúc tương tự:
+        // "ten_file_anh.jpg": {
+        //     status: "HEALTHY" | "DISEASED" | "UNKNOWN",
+        //     title: "Tiêu đề kết quả",
+        //     description: "Mô tả chi tiết",
+        //     recommendation: "Đề xuất xử lý (có thể bỏ trống nếu không cần)"
+        // }
+    };
+    let aiProcessingTimeout = null; // Biến để lưu timeout mô phỏng
+    let aiProcessingInterval = null; // Biến để cập nhật timer
+
+// --- THÊM MỚI: HÀM CHO AI-TOOL ---
+
+/**
+ * Hiển thị lớp overlay xử lý và bắt đầu đếm ngược giả
+ * @param {number} duration - Thời gian xử lý (ms)
+ */
+function showAiProcessing(duration) {
+    aiProcessingOverlay.classList.remove('view-hidden');
+    aiResultsContentReal.classList.add('view-hidden');
+    aiResultsContentReal.innerHTML = ''; // Xóa kết quả cũ
+
+    let remainingTime = Math.ceil(duration / 1000); // Giây
+    aiProcessingTimer.textContent = `(Ước tính: ~${remainingTime} giây)`;
+
+    // Xóa interval cũ nếu có
+    if (aiProcessingInterval) {
+        clearInterval(aiProcessingInterval);
+    }
+
+    // Bắt đầu interval mới để cập nhật timer
+    aiProcessingInterval = setInterval(() => {
+        remainingTime--;
+        if (remainingTime > 0) {
+            aiProcessingTimer.textContent = `(Ước tính: ~${remainingTime} giây)`;
+        } else {
+            aiProcessingTimer.textContent = `(Hoàn tất...)`;
+            clearInterval(aiProcessingInterval);
+            aiProcessingInterval = null;
+        }
+    }, 1000);
+}
+
+/**
+ * Ẩn lớp overlay xử lý và dừng timer (nếu còn chạy)
+ */
+function hideAiProcessing() {
+     aiProcessingOverlay.classList.add('view-hidden');
+     aiResultsContentReal.classList.remove('view-hidden');
+     if (aiProcessingInterval) {
+        clearInterval(aiProcessingInterval);
+        aiProcessingInterval = null;
+     }
+}
+
+/**
+ * Hiển thị kết quả phân tích
+ * @param {object} resultData - Đối tượng kết quả từ aiAnalysisDatabase
+ * @param {string} fileName - Tên tệp gốc để hiển thị lỗi
+ */
+    function renderAiAnalysisResults(resultData, fileName) {
+        hideAiProcessing(); // Đảm bảo overlay đã ẩn
+
+        // Trường hợp không tìm thấy tệp trong database
+        if (!resultData) {
+            aiResultsContentReal.innerHTML = `
+                <div class="flex items-start gap-3 mb-4"> <svg class="status-icon status-unknown flex-shrink-0" fill="none" stroke-width="1.5" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z"></path></svg>
+                    <div> <h3 class="text-2xl font-bold status-unknown">Không thể phân tích</h3>
+                        <p class="text-gray-300 mt-2">Tên tệp <code class="font-mono text-amber-400">${fileName}</code> không khớp với bất kỳ dữ liệu nào trong cơ sở phân tích. Vui lòng thử lại với các tệp ảnh được hỗ trợ (ví dụ: <code>img1.jpg</code>, <code>img2.jpg</code>).</p>
+                    </div>
+                </div>
+            `;
+            return;
+        }
+
+        // Trường hợp tìm thấy kết quả
+        const isHealthy = resultData.status === 'HEALTHY';
+        const isDiseased = resultData.status === 'DISEASED';
+        const statusClass = isHealthy ? 'status-healthy' : (isDiseased ? 'status-diseased' : 'status-unknown');
+        
+        // Icon SVG
+        const statusIcon = isHealthy 
+            ? `<svg class="status-icon status-healthy flex-shrink-0" fill="none" stroke-width="1.5" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"></path></svg>`
+            : (isDiseased 
+                ? `<svg class="status-icon status-diseased flex-shrink-0" fill="none" stroke-width="1.5" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z"></path></svg>`
+                : `<svg class="status-icon status-unknown flex-shrink-0" fill="none" stroke-width="1.5" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z"></path></svg>`
+            );
+
+        aiResultsContentReal.innerHTML = `
+            <div class="flex items-start gap-3 mb-4"> ${statusIcon}
+                <div> <h3 class="text-2xl font-bold ${statusClass}">${resultData.title}</h3>
+                    <p class="text-sm text-gray-400">Tên tệp gốc: <code>${fileName}</code></p>
+                </div>
+            </div>
+            <hr class="border-gray-700 my-4"> <h4 class="text-lg font-semibold text-white mb-2">Mô tả chi tiết</h4>
+            <p class="text-gray-300 mb-4 text-justify">${resultData.description}</p> ${resultData.recommendation ? `
+                <h4 class="text-lg font-semibold text-white mt-5 mb-2">Đề xuất xử lý</h4> <p class="text-gray-300 text-justify">${resultData.recommendation}</p> ` : ''}
+        `;
+    }
+
+    // --- Thêm Event Listener cho AI-TOOL ---
+    // (Dán vào bên trong sự kiện 'DOMContentLoaded', gần các listener khác)
+    aiImageInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) {
+            return; // Không làm gì nếu người dùng hủy
+        }
+        // Kiểm tra loại file cơ bản
+        if (!file.type.startsWith('image/jpeg') && !file.type.startsWith('image/png')) {
+            showToast("Chỉ hỗ trợ tệp .jpg hoặc .png.", "error");
+            aiImageInput.value = ''; // Reset input để có thể chọn lại file cũ
+            return;
+        }
+
+
+        // 1. Hiển thị ảnh
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            aiImagePreview.innerHTML = `
+                <img src="${event.target.result}" alt="Bản xem trước của ${file.name}">
+            `;
+        };
+        reader.onerror = () => {
+            showToast("Lỗi khi đọc tệp ảnh.", "error");
+            aiImagePreview.innerHTML = ''; // Xóa ảnh lỗi
+            aiImagePreview.appendChild(aiImagePreviewPlaceholder); // Hiện lại placeholder
+            aiImageInput.value = ''; // Reset input
+        }
+        reader.readAsDataURL(file);
+
+        // 2. Mô phỏng độ trễ (random 5-20 giây)
+        const delay = Math.floor(Math.random() * (20000 - 5000 + 1)) + 5000;
+        const fileName = file.name;
+
+        // Hiển thị trạng thái "Đang xử lý" và bắt đầu timer
+        showAiProcessing(delay); 
+        
+        // Xóa timeout cũ nếu có (tránh xử lý chồng chéo nếu upload liên tục)
+        if(aiProcessingTimeout) {
+            clearTimeout(aiProcessingTimeout);
+        }
+
+        // Đặt timeout mới
+        aiProcessingTimeout = setTimeout(() => {
+            // 3. Lấy kết quả từ database "giả"
+            const resultData = aiAnalysisDatabase[fileName];
+            
+            // 4. Hiển thị kết quả
+            renderAiAnalysisResults(resultData, fileName);
+            aiProcessingTimeout = null; // Reset timeout variable
+            
+        }, delay);
+
+        // Reset giá trị input để cho phép tải lại cùng 1 file
+        aiImageInput.value = ''; 
+    });
+
+
+
 
     // Khởi động app
     handleNavigation('login'); 
